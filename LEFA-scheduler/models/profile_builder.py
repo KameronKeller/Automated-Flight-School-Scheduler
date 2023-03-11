@@ -1,4 +1,6 @@
 import csv
+from models.instructor import Instructor
+from models.student import Student
 
 class ProfileBuilder:
 
@@ -33,10 +35,31 @@ class ProfileBuilder:
 
 	def build_instructor_profiles(self):
 		profiles = self.create_profiles()
-		instructors = []
+		instructors = {}
 		for profile in profiles:
+			full_name = profile['first_name'] + ' ' + profile['last_name']
 			if profile['instructor'] == "I am an instructor":
-				instructors.append(profile)
+				# unavailability = get_unavailability(profile)
+				if profile['schedule_type'] == 'Rotor-Wing':
+					unavailability = profile['rotorwing_unavailability']
+				else:
+					unavailability = profile['fixedwing_unavailability']
+
+				instructors[full_name] = Instructor(profile['first_name'], profile['last_name'], unavailability)
+
+		for profile in profiles:
+			instructor_name = profile['instructor']
+			if profile['instructor'] in instructors:
+				if profile['schedule_type'] == 'Rotor-Wing':
+					unavailability = profile['rotorwing_unavailability']
+				else:
+					unavailability = profile['fixedwing_unavailability']
+
+				student = Student(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], instructors[instructor_name])
+				instructors[instructor_name].add_student(student)
+			else:
+				if instructor_name != "I am an instructor":
+					print("instructor not found!!!! {}".format(instructor_name))
 
 		return instructors
 
@@ -55,7 +78,7 @@ class ProfileBuilder:
 				# print(row)
 
 				profile = {
-					# may not need this, but adding just-in-case
+					# may not need submission_id, but adding just-in-case
 					'submission_id' : row['ID'],
 					'first_name' : row['What is your first name?'],
 					'last_name' : row['What is your last name?'],
@@ -64,22 +87,26 @@ class ProfileBuilder:
 					'instructor' : row['Who is your instructor?'],
 					'current_rating' : row['What rating will you primarily be working on during the Winter term (January - April)?'],
 					'schedule_type' : row['Are you scheduling Rotor-Wing or Fixed-Wing aircraft?'],
-					'rotorwing_sunday_unavailability' : row['Sunday - Unavailability'],
-					'rotorwing_monday_unavailability' : row['Monday - Unavailability'],
-					'rotorwing_tuesday_unavailability' : row['Tuesday - Unavailability'],
-					'rotorwing_wednesday_unavailability' : row['Wednesday - Unavailability'],
-					'rotorwing_thursday_unavailability' : row['Thursday - Unavailability'],
-					'rotorwing_friday_unavailability' : row['Friday - Unavailability'],
-					'rotorwing_saturday_unavailability' : row['Saturday - Unavailability'],
-					'rotorwing_time_off_explaination' : row['Explanation of Time Off'],
-					'fixedwing_sunday_unavailability' : row['Sunday - Unavailability2'],
-					'fixedwing_monday_unavailability' : row['Monday - Unavailability2'],
-					'fixedwing_tuesday_unavailability' : row['Tuesday - Unavailability2'],
-					'fixedwing_wednesday_unavailability' : row['Wednesday - Unavailability2'],
-					'fixedwing_thursday_unavailability' : row['Thursday - Unavailability2'],
-					'fixedwing_friday_unavailability' : row['Friday - Unavailability2'],
-					'fixedwing_saturday_unavailability' : row['Saturday - Unavailability2'],
-					'fixedwing_time_off_explaination' : row['Explanation of Time Off2']
+					'rotorwing_unavailability' : {
+						'rotorwing_sunday_unavailability' : row['Sunday - Unavailability'],
+						'rotorwing_monday_unavailability' : row['Monday - Unavailability'],
+						'rotorwing_tuesday_unavailability' : row['Tuesday - Unavailability'],
+						'rotorwing_wednesday_unavailability' : row['Wednesday - Unavailability'],
+						'rotorwing_thursday_unavailability' : row['Thursday - Unavailability'],
+						'rotorwing_friday_unavailability' : row['Friday - Unavailability'],
+						'rotorwing_saturday_unavailability' : row['Saturday - Unavailability'],
+						'rotorwing_time_off_explaination' : row['Explanation of Time Off'],
+					},
+					'fixedwing_unavailability' : {
+						'fixedwing_sunday_unavailability' : row['Sunday - Unavailability2'],
+						'fixedwing_monday_unavailability' : row['Monday - Unavailability2'],
+						'fixedwing_tuesday_unavailability' : row['Tuesday - Unavailability2'],
+						'fixedwing_wednesday_unavailability' : row['Wednesday - Unavailability2'],
+						'fixedwing_thursday_unavailability' : row['Thursday - Unavailability2'],
+						'fixedwing_friday_unavailability' : row['Friday - Unavailability2'],
+						'fixedwing_saturday_unavailability' : row['Saturday - Unavailability2'],
+						'fixedwing_time_off_explaination' : row['Explanation of Time Off2']
+					}
 				}
 				profiles.append(profile)
 		return profiles
