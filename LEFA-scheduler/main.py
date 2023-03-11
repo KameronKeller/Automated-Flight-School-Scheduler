@@ -3,6 +3,8 @@
 from models.profile_builder import ProfileBuilder
 import csv
 import sys
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 def main():
     if len(sys.argv) != 2:
@@ -13,7 +15,10 @@ def main():
 
     profile_builder = ProfileBuilder(file_path)
     instructors = profile_builder.build_instructor_profiles()
-    print(instructors)
+    pp.pprint(instructors)
+    for student in instructors['Jason Axt'].students:
+        print(student.full_name)
+
     # schedule_builder = ScheduleBuilder(instructors, aircraft, days)
     # schedule_builder.generate_model()
     # schedule_builder.compute_restraints()
