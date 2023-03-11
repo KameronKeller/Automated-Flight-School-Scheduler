@@ -23,29 +23,10 @@ for student in students:
 for d in days:
 	for s in students:
 		model.Add(sum(blocks[(d, s, a, b)] for a in aircraft for b in hourly_blocks) <= 1)
-# model.Add(sum(blocks[(d, s, a, b)] for a in aircraft for b in hourly_blocks) <= 1)
-# a
-# for d in days:
-# 	for a in aircraft:
-# 		for b in blocks:
-# 			print((blocks[(d, s, a, b)] for s in students))
-# 			model.AddExactlyOne(blocks[(d, s, a, b)] for s in students)
 
 
 solver = cp_model.CpSolver()
 status = solver.Solve(model)
-
-# This works, but I think solution callback is a better solution
-# if status == cp_model.OPTIMAL:
-# 	for d in days:
-# 		for s in students:
-# 			for a in aircraft:
-# 				for b in hourly_blocks:
-# 					# print(solver.BooleanValue(blocks[(d, s, a, b)]))
-# 					if solver.BooleanValue(blocks[(d, s, a, b)]) == True:
-# 						print(f'{d}: {s} flies {a} at {b} hour')
-# else:
-# 	print('No solution found.')
 
 
 class SolutionPrinter(cp_model.CpSolverSolutionCallback):
@@ -88,25 +69,15 @@ print('  - wall time      : %f s' % solver.WallTime())
 print('  - solutions found: %i' % solution_printer.solution_count())
 
 
-# # print(status)
 
-# # print(solver.SolutionInfo())
-# # print(solver.ResponseStats())
-
-
-# for d in days:
-# 	for s in students:
-# 		for a in aircraft:
-# 			for b in blocks:
-# 				print(blocks[(d, s, a, b)])
-# # print(solver.Value())
-
-
-
-  # # Retrieve the solution
-  # for i in instructors:
-  #   for j in students:
-  #     for k in aircrafts:
-  #       for l in slots:
-  #         if solver.Value(flight[(i, j, k, l)]) == 1:
-  #           print(f'{i} is scheduled with {j} on {k} at {l}')
+# This works, but I think solution callback is a better solution
+# if status == cp_model.OPTIMAL:
+# 	for d in days:
+# 		for s in students:
+# 			for a in aircraft:
+# 				for b in hourly_blocks:
+# 					# print(solver.BooleanValue(blocks[(d, s, a, b)]))
+# 					if solver.BooleanValue(blocks[(d, s, a, b)]) == True:
+# 						print(f'{d}: {s} flies {a} at {b} hour')
+# else:
+# 	print('No solution found.')
