@@ -24,7 +24,7 @@ for d in days:
 	for s in students:
 		model.Add(sum(blocks[(d, s, a, b)] for a in aircraft for b in hourly_blocks) <= 1)
 # model.Add(sum(blocks[(d, s, a, b)] for a in aircraft for b in hourly_blocks) <= 1)
-
+# a
 # for d in days:
 # 	for a in aircraft:
 # 		for b in blocks:
