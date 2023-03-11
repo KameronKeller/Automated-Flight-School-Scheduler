@@ -33,11 +33,12 @@ class ProfileBuilder:
 
 	def build_instructor_profiles(self):
 		profiles = self.create_profiles()
+		instructors = []
 		for profile in profiles:
 			if profile['instructor'] == "I am an instructor":
-				print(profile['first_name'])
+				instructors.append(profile)
 
-		# return instructors
+		return instructors
 
 	def create_profiles(self):
 		profiles = []
