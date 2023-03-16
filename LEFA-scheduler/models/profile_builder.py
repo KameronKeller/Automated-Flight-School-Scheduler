@@ -114,6 +114,7 @@ class ProfileBuilder:
 	def verify_fieldnames(self, fieldnames):
 		for required_fieldname in self.required_fieldnames:
 			if required_fieldname not in fieldnames:
-				print("ERROR: {} not found".format(required_fieldname))
+				raise KeyError('CSV file must contain required fieldnames')
+
 
 
