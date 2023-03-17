@@ -1,6 +1,7 @@
 import csv
 from models.instructor import Instructor
 from models.student import Student
+from models.instructor_student import InstructorStudent
 
 class ProfileBuilder:
 
@@ -36,8 +37,9 @@ class ProfileBuilder:
 	def build_instructor_profiles(self):
 		profiles = self.create_profiles()
 		instructors = {}
+		students = set()
 		for profile in profiles:
-			full_name = profile['first_name'] + ' ' + profile['last_name']
+			full_name = profile['full_name']
 			if profile['instructor'] == "I am an instructor":
 				# unavailability = get_unavailability(profile)
 				if profile['schedule_type'] == 'Rotor-Wing':
@@ -46,6 +48,8 @@ class ProfileBuilder:
 					unavailability = profile['fixedwing_unavailability']
 
 				instructors[full_name] = Instructor(profile['first_name'], profile['last_name'], unavailability)
+			else:
+				students.add(profile['full_name'])
 
 		for profile in profiles:
 			instructor_name = profile['instructor']
@@ -55,8 +59,14 @@ class ProfileBuilder:
 				else:
 					unavailability = profile['fixedwing_unavailability']
 
-				student = Student(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], instructors[instructor_name])
-				instructors[instructor_name].add_student(student)
+				if profile['full_name'] in instructors and profile['full_name'] in students:
+					# print('found the instructorStudents {}'.format(profile['full_name']))
+					instructor_student = InstructorStudent(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], instructors[instructor_name], instructors[profile['full_name']].students)
+					instructors[instructor_name].add_student(instructor_student)
+					instructors[profile['full_name']] = instructor_student
+				else:
+					student = Student(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], instructors[instructor_name])
+					instructors[instructor_name].add_student(student)
 			else:
 				if instructor_name != "I am an instructor":
 					print("instructor not found!!!! {}".format(instructor_name))
@@ -82,6 +92,7 @@ class ProfileBuilder:
 					'submission_id' : row['ID'],
 					'first_name' : row['What is your first name?'],
 					'last_name' : row['What is your last name?'],
+					'full_name' : row['What is your first name?'] + ' ' + row['What is your last name?'],
 					'phone_number' : row['What is your phone number?'],
 					'cocc_student' : row['Are you a COCC student?'],
 					'instructor' : row['Who is your instructor?'],
