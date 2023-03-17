@@ -1,6 +1,7 @@
 import unittest
 from models.profile_builder import ProfileBuilder
 from models.student import Student
+from models.instructor_student import InstructorStudent
 
 fake_csv_path_large = 'tests/fake_data.csv'
 fake_csv_path_simple = 'tests/fake_data_simple.csv'
@@ -42,11 +43,12 @@ class TestProfileBuilder(unittest.TestCase):
 
 	def test_create_profiles(self):
 		profiles = self.profile_builder.create_profiles()
-		self.assertEqual(len(profiles), 8)
+		self.assertEqual(len(profiles), 15)
 		test_profile = profiles[0]
 		self.assertEqual(test_profile['submission_id'], '1906')
 		self.assertEqual(test_profile['first_name'], 'Porter')
 		self.assertEqual(test_profile['last_name'], 'Darleen')
+		self.assertEqual(test_profile['full_name'], 'Porter Darleen')
 		self.assertEqual(test_profile['phone_number'], '7839159761')
 		self.assertEqual(test_profile['cocc_student'], 'Yes')
 		self.assertEqual(test_profile['instructor'], 'Garth Conrad')
@@ -56,10 +58,23 @@ class TestProfileBuilder(unittest.TestCase):
 			'05:00;06:00;07:00;08:00;14:00;13:00;12:00;11:00;10:00;09:00;')
 		self.assertEqual(test_profile['fixedwing_unavailability']['fixedwing_sunday_unavailability'], '')
 
-	def test_build_instructor_profiles(self):
+	def test_there_3_instructors_in_sample_data(self):
+		instructors = self.profile_builder.build_instructor_profiles()
+		self.assertEqual(len(instructors), 3)
+
+	def test_build_instructor_identifies_instructor_student(self):
+		instructors = self.profile_builder.build_instructor_profiles()
+		instructor_student = instructors['Orin McIlwain']
+		self.assertIsInstance(instructor_student, InstructorStudent)
+		self.assertEqual(instructor_student.instructor.full_name, 'Stephana Shervil')
+		self.assertEqual(len(instructor_student.students), 4)
+		self.assertEqual(instructor_student.rating, 'CFII')
+
+
+	def test_build_instructor_builds_correctly(self):
 		instructors = self.profile_builder.build_instructor_profiles()
 		instructor = instructors['Garth Conrad']
-		self.assertEqual(len(instructors), 1)
+		# self.assertEqual(len(instructors), 3)
 		self.assertEqual(instructor.full_name, 'Garth Conrad')
 		self.assertEqual(len(instructor.students), 7)
 		student = instructor.students[0]
