@@ -3,10 +3,9 @@ from models.aircraft import Aircraft
 
 class AircraftFactory:
 
-	def __init__(self):
-		self.aircrafts = {}
-
 	def build_aircraft_of_model(self, name_prefix, model, num_aircraft, earliest_block, latest_block):
+		available_aircraft = {}
+
 		later_start_time = earliest_block + 1
 		earlier_finish_time = latest_block - 1
 		majority_aircraft = True # flag for determining how many odd/even aircraft to make if number of aircraft is odd
@@ -25,9 +24,9 @@ class AircraftFactory:
 				schedule_blocks = self.calculate_blocks(later_start_time, earlier_finish_time)
 
 			aircraft = Aircraft(aircraft_name, model, block_type, schedule_blocks)
-			self.aircrafts[aircraft_name] = aircraft
+			available_aircraft[aircraft_name] = aircraft
 
-		return self.aircrafts
+		return available_aircraft
 
 
 	def calculate_even_or_odd(self, earliest_block):
