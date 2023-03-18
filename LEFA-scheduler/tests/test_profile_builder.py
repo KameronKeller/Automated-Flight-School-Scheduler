@@ -54,9 +54,9 @@ class TestProfileBuilder(unittest.TestCase):
 		self.assertEqual(test_profile['instructor'], 'Garth Conrad')
 		self.assertEqual(test_profile['current_rating'], 'CFI')
 		self.assertEqual(test_profile['schedule_type'], 'Rotor-Wing')
-		self.assertEqual(test_profile['rotorwing_unavailability']['rotorwing_sunday_unavailability'],
+		self.assertEqual(test_profile['rotorwing_unavailability']['Sunday'],
 			'05:00;06:00;07:00;08:00;14:00;13:00;12:00;11:00;10:00;09:00;')
-		self.assertEqual(test_profile['fixedwing_unavailability']['fixedwing_sunday_unavailability'], '')
+		self.assertEqual(test_profile['fixedwing_unavailability']['Sunday'], '')
 
 	def test_there_3_instructors_in_sample_data(self):
 		instructors = self.profile_builder.build_instructor_profiles()
@@ -74,7 +74,6 @@ class TestProfileBuilder(unittest.TestCase):
 	def test_build_instructor_builds_correctly(self):
 		instructors = self.profile_builder.build_instructor_profiles()
 		instructor = instructors['Garth Conrad']
-		# self.assertEqual(len(instructors), 3)
 		self.assertEqual(instructor.full_name, 'Garth Conrad')
 		self.assertEqual(len(instructor.students), 7)
 		student = instructor.students[0]
