@@ -4,14 +4,22 @@ print("====================")
 
 model = cp_model.CpModel()
 
+n_students = 1000
+n_aircraft = int(n_students/25) + 3
+
+students = ['s' + str(i) for i in range(1, n_students)]
+aircraft = ['a' + str(i) for i in range(1, n_aircraft)]
+
 # days = ['monday']
-days = ['monday', 'tuesday', 'wednesday']
-students = ['tommy', 'sue', 'joe']
+# days = ['monday', 'tuesday', 'wednesday']
+days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+# students = ['tommy', 'sue', 'joe']
 # students = ['tommy']
 # students = ['tommy', 'sue']
 # aircraft = ['a1']
-aircraft = ['a1', 'a2', 'a3', 'a4', 'a5']
-hourly_blocks = ['8', '9', '10']
+# aircraft = ['a1', 'a2', 'a3', 'a4', 'a5']
+# hourly_blocks = ['8', '9', '10']
+hourly_blocks = ['8', '9', '10', '11', '12', '1', '2', '3', '4', '5', '6']
 # hourly_blocks = ['8']
 
 schedule = {}
@@ -79,14 +87,15 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 	def on_solution_callback(self):
 		self._solution_count += 1
-		print('\nSolution %i' % self._solution_count)
+		# print('\nSolution %i' % self._solution_count)
 		for d in self._days:
-			print('%s' % d)
+			# print('%s' % d)
 			for s in self._students:
 				for a in self._aircraft:
 					for b in self._hourly_blocks:
 						if self.Value(self._blocks[(d, s, a, b)]):
-							print(f'{s} flies {a} at {b}')
+							# print(f'{s} flies {a} at {b}')
+							print('{},{},{},{}'.format(d,s,a,b))
 		if self._solution_count >= self._solution_limit:
 			print('Stop search after %i solutions' % self._solution_limit)
 			self.StopSearch()
@@ -94,7 +103,7 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 	def solution_count(self):
 		return self._solution_count
 
-solution_limit = 5
+solution_limit = 1
 solution_printer = SolutionPrinter(schedule, days, students, aircraft, hourly_blocks, solution_limit)
 status = solver.Solve(model, solution_printer)
 
