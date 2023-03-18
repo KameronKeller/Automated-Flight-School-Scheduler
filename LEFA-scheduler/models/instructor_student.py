@@ -1,11 +1,8 @@
-from models.person import Person
+from models.student import Student
 
-class InstructorStudent(Person):
-
-	def __init__(self, first_name, last_name, unavailability, rating, instructor, students):
-		super().__init__(first_name, last_name, unavailability)
-		self.rating = rating
-		self.instructor = instructor
+class InstructorStudent(Student):
+	def __init__(self, first_name, last_name, unavailability, rating, schedule_type, instructor, students):
+		super().__init__(first_name, last_name, unavailability, rating, schedule_type, instructor)
 		self.students = students
 
 	def add_student(self, student):
