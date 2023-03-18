@@ -61,11 +61,11 @@ class ProfileBuilder:
 
 				if profile['full_name'] in instructors and profile['full_name'] in students:
 					# print('found the instructorStudents {}'.format(profile['full_name']))
-					instructor_student = InstructorStudent(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], instructors[instructor_name], instructors[profile['full_name']].students)
+					instructor_student = InstructorStudent(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], profile['schedule_type'], instructors[instructor_name], instructors[profile['full_name']].students)
 					instructors[instructor_name].add_student(instructor_student)
 					instructors[profile['full_name']] = instructor_student
 				else:
-					student = Student(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], instructors[instructor_name])
+					student = Student(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], profile['schedule_type'], instructors[instructor_name])
 					instructors[instructor_name].add_student(student)
 			else:
 				if instructor_name != "I am an instructor":
@@ -106,8 +106,8 @@ class ProfileBuilder:
 						'rotorwing_thursday_unavailability' : row['Thursday - Unavailability'],
 						'rotorwing_friday_unavailability' : row['Friday - Unavailability'],
 						'rotorwing_saturday_unavailability' : row['Saturday - Unavailability'],
-						'rotorwing_time_off_explaination' : row['Explanation of Time Off'],
 					},
+					'rotorwing_time_off_explaination' : row['Explanation of Time Off'],
 					'fixedwing_unavailability' : {
 						'fixedwing_sunday_unavailability' : row['Sunday - Unavailability2'],
 						'fixedwing_monday_unavailability' : row['Monday - Unavailability2'],
@@ -116,8 +116,8 @@ class ProfileBuilder:
 						'fixedwing_thursday_unavailability' : row['Thursday - Unavailability2'],
 						'fixedwing_friday_unavailability' : row['Friday - Unavailability2'],
 						'fixedwing_saturday_unavailability' : row['Saturday - Unavailability2'],
+					},
 						'fixedwing_time_off_explaination' : row['Explanation of Time Off2']
-					}
 				}
 				profiles.append(profile)
 		return profiles
