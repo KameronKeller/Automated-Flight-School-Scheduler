@@ -4,7 +4,7 @@ print("====================")
 
 model = cp_model.CpModel()
 
-n_students = 1000
+n_students = 10
 n_aircraft = int(n_students/25) + 3
 
 students = ['s' + str(i) for i in range(1, n_students)]
@@ -115,11 +115,11 @@ print('  - branches       : %i' % solver.NumBranches())
 print('  - wall time      : %f s' % solver.WallTime())
 print('  - solutions found: %i' % solution_printer.solution_count())
 
-# print(cp_model.OPTIMAL)
-# print(cp_model.FEASIBLE)
-# print(cp_model.INFEASIBLE)
-# print(cp_model.MODEL_INVALID)
-# print(cp_model.UNKNOWN)
+# print('OPTIMAL: {}'.format(cp_model.OPTIMAL))
+# print('FEASIBLE: {}'.format(cp_model.FEASIBLE))
+# print('INFEASIBLE: {}'.format(cp_model.INFEASIBLE))
+# print('MODEL_INVALID: {}'.format(cp_model.MODEL_INVALID))
+# print('UNKNOWN: {}'.format(cp_model.UNKNOWN))
 
 
 # This works, but I think solution callback is a better solution
