@@ -1,6 +1,9 @@
 # from models.csv_parser import CsvParser
 # from models.person import Person
 from models.profile_builder import ProfileBuilder
+from models.schedule_builder import ScheduleBuilder
+from models.calendar import Calendar
+from models.aircraft_factory import AircraftFactory
 import csv
 import sys
 import pprint
@@ -16,13 +19,61 @@ def main():
     profile_builder = ProfileBuilder(file_path)
     instructors = profile_builder.build_instructor_profiles()
     pp.pprint(instructors)
-    for student in instructors['Jason Axt'].students:
-        print(student.full_name)
+    # for student in instructors['Jason Axt'].students:
+        # print(student.full_name)
+
+    available_aircraft = {}
+    aircraft_factory = AircraftFactory()
+    earliest_block = 7
+    latest_block = 17
+    available_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
+                                    name_prefix = 'R22',
+                                    model = 'R22',
+                                    num_aircraft = 1,
+                                    # num_aircraft = 6,
+                                    earliest_block = earliest_block,
+                                    latest_block = latest_block)
+
+    available_aircraft['R44'] = aircraft_factory.build_aircraft_of_model(
+                                    name_prefix = 'R44',
+                                    model = 'R44',
+                                    num_aircraft = 3,
+                                    earliest_block = earliest_block,
+                                    latest_block = latest_block)
+
+    available_aircraft['RWSIM'] = aircraft_factory.build_aircraft_of_model(
+                                    name_prefix = 'RWSIM',
+                                    model = 'RWSIM',
+                                    num_aircraft = 1,
+                                    earliest_block = earliest_block,
+                                    latest_block = latest_block)
+
+    available_aircraft['C172'] = aircraft_factory.build_aircraft_of_model(
+                                    name_prefix = 'C172',
+                                    model = 'C172',
+                                    num_aircraft = 11,
+                                    earliest_block = earliest_block,
+                                    latest_block = latest_block)
+
+    available_aircraft['BARON'] = aircraft_factory.build_aircraft_of_model(
+                                    name_prefix = 'BARON',
+                                    model = 'BARON',
+                                    num_aircraft = 1,
+                                    earliest_block = earliest_block,
+                                    latest_block = latest_block)
+
+    available_aircraft['FWSIM'] = aircraft_factory.build_aircraft_of_model(
+                                    name_prefix = 'FWSIM',
+                                    model = 'FWSIM',
+                                    num_aircraft = 1,
+                                    earliest_block = earliest_block,
+                                    latest_block = latest_block)
 
     # schedule_builder = ScheduleBuilder(instructors, aircraft, days)
-    # schedule_builder.generate_model()
-    # schedule_builder.compute_restraints()
-    # schedule_builder.output_schedule()
+    schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), available_aircraft)
+    schedule_builder.generate_model()
+    schedule_builder.add_constraints()
+    schedule_builder.output_schedule()
 
 
 
