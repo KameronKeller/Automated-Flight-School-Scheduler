@@ -1,5 +1,6 @@
 from ortools.sat.python import cp_model
 from models.instructor import Instructor
+from models.solution_printer import SolutionPrinter
 # from models.aircraft import Aircraft
 
 class ScheduleBuilder:
@@ -19,70 +20,86 @@ class ScheduleBuilder:
 					for aircraft_model, flight_configuration in student.aircraft.items():
 						for aircraft in self.available_aircraft[aircraft_model].values():
 							for schedule_block in aircraft.schedule_blocks:
-								next_hour = schedule_block + 1 # aircraft are scheduled for 2 hours
+								# next_hour = schedule_block + 1 # aircraft are scheduled for 2 hours
 
-								student_unavailability = student.unavailability[day]
-								instructor_unavailability = instructor.unavailability[day]
-								combined_unavailability = student_unavailability.union(instructor_unavailability)
+								# student_unavailability = student.unavailability[day]
+								# instructor_unavailability = instructor.unavailability[day]
+								# combined_unavailability = student_unavailability.union(instructor_unavailability)
 
-								if 'solo' in flight_configuration:
-									# if the schedule_block and next_hour are not in the unavailability set, the student is available
-									if schedule_block not in student_unavailability or next_hour not in student_unavailability:
-										flight_key = (day, 'SOLO FLIGHT', student.full_name, aircraft.name, schedule_block)
-										self.solo_flights.append(flight_key) # keep track of solo flights for adding constraints later
-										self.schedule[flight_key] = self.model.NewBoolVar('{} {} {} {} {}'.format(
-																													day,
-																													'SOLO FLIGHT',
-																													student.full_name,
-																													aircraft.name,
-																													schedule_block))
-										# self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.schedule[(day, 'SOLO FLIGHT', student.full_name, aircraft.name, schedule_block)])
-
-
-								else: # Currently flight configurations are always dual or solo
-									if schedule_block not in combined_unavailability or next_hour not in combined_unavailability:
-										self.schedule[(
-													day,
-													instructor.full_name,
-													student.full_name,
-													aircraft.name,
-													schedule_block)] = self.model.NewBoolVar('{} {} {} {} {}'.format(
-																													day,
-																													instructor.full_name,
-																													student.full_name,
-																													aircraft.name,
-																													schedule_block))
+								# if 'solo' in flight_configuration:
+								# 	pass
+								# 	# if the schedule_block and next_hour are not in the unavailability set, the student is available
+								# 	if schedule_block not in student_unavailability or next_hour not in student_unavailability:
+								# 		flight_key = (day, 'SOLO FLIGHT', student.full_name, aircraft.name, schedule_block)
+								# 		self.solo_flights.append(flight_key) # keep track of solo flights for adding constraints later
+								# 		self.schedule[flight_key] = self.model.NewBoolVar('{} {} {} {} {}'.format(
+								# 																					day,
+								# 																					'SOLO FLIGHT',
+								# 																					student.full_name,
+								# 																					aircraft.name,
+								# 																					schedule_block))
+								# 		# self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.schedule[(day, 'SOLO FLIGHT', student.full_name, aircraft.name, schedule_block)])
 
 
+								# else: # Currently flight configurations are always dual or solo
+								# if schedule_block not in combined_unavailability or next_hour not in combined_unavailability:
+									# print('({}, {}, {}, {}, {})'.format(day,instructor.full_name,student.full_name,aircraft.name,schedule_block))
+								self.schedule[(
+											day,
+											instructor.full_name,
+											student.full_name,
+											aircraft.name,
+											schedule_block)] = self.model.NewBoolVar('{} {} {} {} {}'.format(
+																											day,
+																											instructor.full_name,
+																											student.full_name,
+																											aircraft.name,
+																											schedule_block))
 
 
+	def add_constraints(self):
+		# Each student must have specified number of flights per week
+		for instructor in self.instructors.values():
+			for student in instructor.students:
+				# print(student.full_name + "=======================")
+				for aircraft_model, flight_configuration in student.aircraft.items():
+					# for aircraft in self.available_aircraft[aircraft_model].values():
+						# print(self.available_aircraft[aircraft_model])
+						self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks) == flight_configuration['dual'])
 
 
-								# # if schedule_block in student
-
-								# print("{} {}".format(student_unavailability, instructor_unavailability))
-
-
-
-	# 				# how should I get the aircraft at this step?
-	# 					# get it from configuration, then iterate over the type the student should be flying?
-					# for aircraft in aircrafts:
-	# 					for block in aircraft.blocks:
-	# 						if student and instructor are free:
-	# 							schedule[(
-	# 								day,
-	# 								instructor,
-	# 								student,
-	# 								aircraft,
-	# 								block)] = model.NewBoolVar('block {} {} {} {} {}'.format(
-	# 																					day,
-	# 																					instructor,
-	# 																					student,
-	# 																					aircraft,
-	# 																					block))
+		# Each flight must be on a different day
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for student in instructor.students:
+					# for aircraft_model in student.aircraft.keys():
+					self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for aircraft_model in student.aircraft.keys() for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks)
 
 
+		# Each aircraft can only hold one person per block, per day
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for aircraft_type in self.available_aircraft.values():
+					for aircraft_name, aircraft in aircraft_type.items():
+						for schedule_block in aircraft.schedule_blocks:
+							self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for student in instructor.students
+								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+			# for aircraft in self.available_aircraft.values():
+				# print(aircraft)
 
 
+	def output_schedule(self):
+		solver = cp_model.CpSolver()
+		solver.parameters.linearization_level = 0
+		solver.parameters.enumerate_all_solutions = True
+		solution_printer = SolutionPrinter(self.instructors, self.days, self.available_aircraft, self.schedule, 1)
+		status = solver.Solve(self.model, solution_printer)
+		# Statistics.
+		print('\nStatistics')
+		print('  - status         : {}'.format(status))
+		print('  - conflicts      : %i' % solver.NumConflicts())
+		print('  - branches       : %i' % solver.NumBranches())
+		print('  - wall time      : %f s' % solver.WallTime())
+		print('  - solutions found: %i' % solution_printer.solution_count())
 
 
