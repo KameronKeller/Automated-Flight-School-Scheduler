@@ -137,4 +137,9 @@ class ScheduleBuilder:
 		# print('  - wall time      : %f s' % solver.WallTime())
 		# print('  - solutions found: %i' % solution_printer.solution_count())
 
+	def build_schedule(self):
+		self.generate_model()
+		self.add_constraints()
+		return self.output_schedule()
+
 
