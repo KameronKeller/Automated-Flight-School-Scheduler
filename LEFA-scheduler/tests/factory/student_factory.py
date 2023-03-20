@@ -1,21 +1,26 @@
 from models.student import Student
+from tests.factory.unavailability_factory import UnavailabilityFactory
 
 class StudentFactory:
 
-	first_name = 'first'
-	last_name = 'last'
-	unavailability = {
-	'Sunday' : '05:30;06:30;',
-	'Monday' : '06:30;05:30;09:30;11:30;10:30;',
-	'Tuesday' : '05:30;06:30;07:30;08:30;09:30;10:30;11:30;12:30;13:30;14:30;15:30;16:30;17:30;18:30;19:30;20:30;',
-	'Wednesday' : '05:30;06:30;07:30;08:30;09:30;10:30;11:30;12:30;13:30;14:30;15:30;16:30;17:30;18:30;19:30;20:30;',
-	'Thursday' : '05:30;06:30;',
-	'Friday' : '06:30;05:30;',
-	'Saturday' : '05:30;06:30;'}
-	rating = 'rating'
-	schedule_type = 'schedule_type'
+	first_name = 'Student'
+	last_name = 'L'
+	rating = 'Private'
+	schedule_type = 'Rotor-Wing'
 	instructor = 'instructor'
 
 	@staticmethod
-	def create_student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor):
+	def create_student(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_default_unavailability(), rating=rating, schedule_type=schedule_type, instructor=instructor):
+		return Student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor)
+
+	@staticmethod
+	def create_free_student(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_completely_free(), rating=rating, schedule_type=schedule_type, instructor=instructor):
+		return Student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor)
+
+	@staticmethod
+	def create_three_blocks_three_days_student(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_three_odd_blocks_three_days(), rating=rating, schedule_type=schedule_type, instructor=instructor):
+		return Student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor)
+
+	@staticmethod
+	def create_one_block_student(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_one_block_free(), rating=rating, schedule_type=schedule_type, instructor=instructor):
 		return Student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor)
