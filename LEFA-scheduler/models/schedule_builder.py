@@ -15,36 +15,14 @@ class ScheduleBuilder:
 		self.test_environment = test_environment
 
 	def generate_model(self):
-		# solo_flight_id = 0
-		# solo_instructors = {}
-		# solo_instructor_unavailability = {
-		# 		'Sunday': '',
-		# 		'Monday': '',
-		# 		'Tuesday': '',
-		# 		'Wednesday': '',
-		# 		'Thursday': '',
-		# 		'Friday': '',
-		# 		'Saturday': ''}
-
-		for day in self.days:
-			for instructor in self.instructors.values():
-				# print("name: {} solo_placeholder: {}".format(instructor.full_name, instructor.solo_placeholder))
-				for student in instructor.students:
 					# solo_instructor = Instructor(first_name='SOLO FLIGHT', last_name=str(solo_flight_id), unavailability=solo_instructor_unavailability)
 					# solo_flight_id += 1 # increment the ID
 					# solo_instructor.add_student(student)
-					for aircraft_model, flight_configuration in student.aircraft.items():
-						for aircraft in self.available_aircraft[aircraft_model].values():
+
 							# if instructor.solo_placeholder and not aircraft.soloable:
 							# 	print(aircraft.name)
 							# 	continue
 							# else:
-								for schedule_block in aircraft.schedule_blocks:
-									next_hour = schedule_block + 1 # aircraft are scheduled for 2 hours
-
-									student_unavailability = student.unavailability[day]
-									instructor_unavailability = instructor.unavailability[day]
-									combined_unavailability = student_unavailability.union(instructor_unavailability)
 									# if 'solo' in flight_configuration:
 
 									# # 	# if the schedule_block and next_hour are not in the unavailability set, the student is available
@@ -62,23 +40,37 @@ class ScheduleBuilder:
 
 
 									# else: # Currently flight configurations are always dual or solo
-									if schedule_block not in combined_unavailability or next_hour not in combined_unavailability:
 										# print('({}, {}, {}, {}, {})'.format(day,instructor.full_name,student.full_name,aircraft.name,schedule_block))
 										# if instructor.solo_placeholder and not aircraft.soloable:
 										# 	print("name: {} solo_placeholder: {} aircraft.name: {} aircraft.soloable: {}".format(instructor.full_name, instructor.solo_placeholder, aircraft.name, aircraft.soloable))
 										# 	continue
 										# else:
-											self.schedule[(
-														day,
-														instructor.full_name,
-														student.full_name,
-														aircraft.name,
-														schedule_block)] = self.model.NewBoolVar('{} {} {} {} {}'.format(
-																														day,
-																														instructor.full_name,
-																														student.full_name,
-																														aircraft.name,
-																														schedule_block))
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for student in instructor.students:
+					for aircraft_model, flight_configuration in student.aircraft.items():
+						for aircraft in self.available_aircraft[aircraft_model].values():
+							for schedule_block in aircraft.schedule_blocks:
+								next_hour = schedule_block + 1 # aircraft are scheduled for 2 hours
+
+								student_unavailability = student.unavailability[day]
+								instructor_unavailability = instructor.unavailability[day]
+								combined_unavailability = student_unavailability.union(instructor_unavailability)
+								if schedule_block not in combined_unavailability or next_hour not in combined_unavailability:
+									if instructor.solo_placeholder and not aircraft.soloable:
+										continue
+									else:
+										self.schedule[(
+													day,
+													instructor.full_name,
+													student.full_name,
+													aircraft.name,
+													schedule_block)] = self.model.NewBoolVar('{} {} {} {} {}'.format(
+																													day,
+																													instructor.full_name,
+																													student.full_name,
+																													aircraft.name,
+																													schedule_block))
 				# Add the newly created solo instructors to the instructors dictionary
 		# self.instructors = self.instructors | solo_instructors
 		# solo_instructors.update(self.instructors)
@@ -129,11 +121,24 @@ class ScheduleBuilder:
 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == flight_configuration['dual'])
 
 						# for configuration, num_flights in flight_configuration.items():
+						# 	self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
+						# 		if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == num_flights)
 							# print(configuration)
 
 						# if 'solo' in flight_configuration:
 						# 	self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
 						# 		if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == flight_configuration['solo'])
+
+		# # Prevent solo flights in non-soloable aircraft
+		# for day in self.days:
+		# 	for instructor in self.instructors.values():
+		# 		for student in instructor.students:
+		# 			for aircraft_model, flight_configuration in student.aircraft.items():
+		# 				for aircraft in self.available_aircraft[aircraft_model].values():
+		# 					if instructor.solo_placeholder and not aircraft.soloable:
+		# 						self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for schedule_block in aircraft.schedule_blocks
+		# 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == 0)
+
 
 
 
