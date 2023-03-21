@@ -1,6 +1,7 @@
 from ortools.sat.python import cp_model
 from models.instructor import Instructor
 from models.solution_printer import SolutionPrinter
+from models.instructor_student import InstructorStudent
 import pprint as pp
 # from models.aircraft import Aircraft
 
@@ -73,10 +74,15 @@ class ScheduleBuilder:
 	def add_all_flights_on_different_day(self):
 		# Each flight must be on a different day
 		for day in self.days:
-			for instructor in self.instructors.values():
-				for student in instructor.students:
-					self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for aircraft_model in student.aircraft.keys() for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
-						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+			for i in self.instructors.values(): # throw away the i, not needed
+				for student in i.students:
+					self.model.AddAtMostOne(
+						self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+							for instructor in self.instructors.values()
+								for aircraft_model in student.aircraft.keys()
+									for aircraft in self.available_aircraft[aircraft_model].values()
+										for schedule_block in aircraft.schedule_blocks
+											if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
 
 	def add_one_block_hold_one_student(self):
 		# Each aircraft can only hold one student per block, per day
@@ -85,14 +91,93 @@ class ScheduleBuilder:
 				for aircraft_type in self.available_aircraft.values():
 					for aircraft_name, aircraft in aircraft_type.items():
 						for schedule_block in aircraft.schedule_blocks:
-							self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for student in instructor.students
-								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+							self.model.AddAtMostOne(
+								self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+									for student in instructor.students
+										if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+
+	def add_instructor_at_one_place_at_a_time_on_a_given_day(self):
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for s in instructor.students:
+					for a_m in s.aircraft.keys():
+						for a in self.available_aircraft[a_m].values():
+							for schedule_block in a.schedule_blocks:
+								self.model.AddAtMostOne(
+									self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+										for student in instructor.students
+											for aircraft_model in student.aircraft.keys()
+												for aircraft in self.available_aircraft[aircraft_model].values()
+													if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+								# if isinstance(instructor, InstructorStudent):
+								# 	self.model.AddImplication(
+								# 		(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+								# 			for student in instructor.students
+								# 				for aircraft_model in student.aircraft.keys()
+								# 					for aircraft in self.available_aircraft[aircraft_model].values()
+								# 						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule),
+								# 		(self.schedule[(day, instructor_instructor.full_name, instructor.full_name, aircraft.name, schedule_block)].Not() # an instructor_instructor is the instructor of an InstructorStudent
+								# 			for instructor_instructor in self.instructors.values()
+								# 				for aircraft_model in instructor.aircraft.keys()
+								# 					for aircraft in self.available_aircraft[aircraft_model].values()
+								# 						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule))
+
+
+
+	def add_instructor_student_at_one_place_at_a_time_on_a_given_day(self):
+		# possible_student_blocks = []
+		for day in self.days:
+			for instructor in self.instructors.values():
+				if isinstance(instructor, InstructorStudent):
+					for student in instructor.students:
+						for aircraft_model in student.aircraft.keys():
+							for aircraft in self.available_aircraft[aircraft_model].values():
+								for schedule_block in aircraft.schedule_blocks:
+									if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule:
+										for instructor_student_aircraft_model in instructor.aircraft.keys():
+											for instructor_student_aircraft in self.available_aircraft[instructor_student_aircraft_model].values():
+												# print(instructor_student_aircraft.name)
+												if (day, instructor.instructor, instructor.full_name, instructor_student_aircraft.name, schedule_block) in self.schedule:
+													self.model.AddImplication(
+														self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)],
+														self.schedule[(day, instructor.instructor, instructor.full_name, instructor_student_aircraft.name, schedule_block)].Not())
+
+										# possible_student_blocks.append((day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
+										# if (day, instructor.instructor.full_name, instructor.full_name, aircraft.name, schedule_block) in self.schedule:
+										# 	self.model.AddImplication(
+										# 		self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)],
+										# 		self.schedule[(day, instructor.instructor.full_name, instructor.full_name, aircraft.name, schedule_block)].Not())
+
+		# for day in self.days:
+		# 	for instructor in self.instructors.values():
+		# 		if isinstance(instructor, InstructorStudent):
+		# 			for aircraft_model in instructor.aircraft.keys():
+		# 				for aircraft in self.available_aircraft[aircraft_model].values():
+		# 					for schedule_block in aircraft.schedule_blocks:
+
+
+
+
+
+					# self.model.AddImplication(
+					# 	self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+					# 		for student in instructor.students
+					# 			for aircraft_model in student.aircraft.keys()
+					# 				for aircraft in self.available_aircraft[aircraft_model].values()
+					# 					for schedule_block in aircraft.schedule_blocks
+
+					# 	, )
+					# print(instructor.full_name)
+
+
 
 
 	def add_constraints(self):
 		self.add_specified_flights_per_week()
 		self.add_all_flights_on_different_day()
 		self.add_one_block_hold_one_student()
+		self.add_instructor_at_one_place_at_a_time_on_a_given_day()
+		self.add_instructor_student_at_one_place_at_a_time_on_a_given_day()
 
 
 	def output_schedule(self):
