@@ -17,8 +17,10 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 			'instructors' : [],
 			'students' : [],
 			'aircraft' : [],
+			'aircraft_model' : [],
 			'blocks' : [],
-			'day_and_hour_blocks' : []
+			'day_and_hour_blocks' : [],
+			'instructor_and_day_hour_blocks' : []
 		}
 
 	def on_solution_callback(self):
@@ -44,8 +46,10 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 										self.solution_log['instructors'].append(instructor.full_name)
 										self.solution_log['students'].append(student.full_name)
 										self.solution_log['aircraft'].append(aircraft.name)
+										self.solution_log['aircraft_model'].append(aircraft_model)
 										self.solution_log['blocks'].append(schedule_block)
 										self.solution_log['day_and_hour_blocks'].append(day + '_' + str(schedule_block))
+										self.solution_log['instructor_and_day_hour_blocks'].append(instructor.full_name + '_' + day + '_' + str(schedule_block))
 
 										if not self.test_environment:
 											print('{},{},{},{},{}'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
