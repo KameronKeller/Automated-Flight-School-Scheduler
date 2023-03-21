@@ -35,7 +35,6 @@ class TestAircraftFactory(unittest.TestCase):
                                             earliest_block = 7,
                                             latest_block = 17)
         for a in aircraft.values():
-            print(a.block_type)
             if a.block_type == 'odd':
                 odd_count += 1
             elif a.block_type == 'even':
