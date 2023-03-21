@@ -43,7 +43,7 @@ class TestProfileBuilder(unittest.TestCase):
 
 	def test_create_profiles(self):
 		profiles = self.profile_builder.create_profiles()
-		self.assertEqual(len(profiles), 15)
+		self.assertEqual(len(profiles), 24)
 		test_profile = profiles[0]
 		self.assertEqual(test_profile['submission_id'], '1906')
 		self.assertEqual(test_profile['first_name'], 'Porter')
@@ -58,9 +58,10 @@ class TestProfileBuilder(unittest.TestCase):
 			'05:00;06:00;07:00;08:00;14:00;13:00;12:00;11:00;10:00;09:00;')
 		self.assertEqual(test_profile['fixedwing_unavailability']['Sunday'], '')
 
-	def test_there_3_instructors_in_sample_data(self):
-		instructors = self.profile_builder.build_instructor_profiles()
-		self.assertEqual(len(instructors), 3)
+	# Test no longer needed as I am creating solo instructors
+	# def test_there_4_instructors_in_sample_data(self):
+	# 	instructors = self.profile_builder.build_instructor_profiles()
+	# 	self.assertEqual(len(instructors), 3)
 
 	def test_build_instructor_identifies_instructor_student(self):
 		instructors = self.profile_builder.build_instructor_profiles()
