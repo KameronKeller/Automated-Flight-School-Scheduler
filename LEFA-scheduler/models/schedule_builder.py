@@ -2,6 +2,7 @@ from ortools.sat.python import cp_model
 from models.instructor import Instructor
 from models.solution_printer import SolutionPrinter
 from models.instructor_student import InstructorStudent
+from models.calendar import Calendar
 import pprint as pp
 # from models.aircraft import Aircraft
 
@@ -14,6 +15,14 @@ class ScheduleBuilder:
 		self.model = cp_model.CpModel()
 		self.schedule = {}
 		self.test_environment = test_environment
+		self.all_aircraft_names = self.get_all_aircraft_names()
+
+	def get_all_aircraft_names(self):
+		all_aircraft_names = []
+		for aircraft_model in self.available_aircraft.values():
+			for aircraft_name in aircraft_model.keys():
+				all_aircraft_names.append(aircraft_name)
+		return all_aircraft_names
 
 	def generate_model(self):
 		for day in self.days:
@@ -134,6 +143,41 @@ class ScheduleBuilder:
 														self.schedule[(day, instructor.instructor, instructor.full_name, instructor_student_aircraft.name, schedule_block)].Not())
 
 
+	def add_instructors_have_max_14_hour_duty_day(self):
+		possible_blocks = Calendar.get_possible_blocks()
+		max_difference = 12
+		# on any given day
+		for day in self.days:
+			# for each instructor
+			for instructor in self.instructors.values():
+				for student in instructor.students:
+					for aircraft_model in student.aircraft.keys():
+						for aircraft in self.available_aircraft[aircraft_model].values():
+							for schedule_block in aircraft.schedule_blocks:
+								for next_student in instructor.students:
+									# Skip over the student if they are the same student
+									if next_student != student:
+										for next_aircraft_model in next_student.aircraft.keys():
+											for next_aircraft in self.available_aircraft[aircraft_model].values():
+												for next_schedule_block in next_aircraft.schedule_blocks:
+													current_block = (day, instructor.full_name, student.full_name, aircraft.name, schedule_block)
+													other_block = (day, instructor.full_name, next_student.full_name, next_aircraft.name, next_schedule_block + max_difference)
+													if current_block in self.schedule:
+														if other_block in self.schedule:
+															self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
+
+	# def add_flights_are_2_hours(self):
+
+	def add_instructors_must_have_one_day_off_per_week(self):
+		for instructor in self.instructors.values():
+			for student in instructor.students:
+				for aircraft_model, flight_configuration in student.aircraft.items():
+					for aircraft in self.available_aircraft[aircraft_model].values():
+						for schedule_block in aircraft.schedule_blocks:
+							self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+								for day in self.days
+									if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) < 7)
+
 
 
 	def add_constraints(self):
@@ -142,6 +186,9 @@ class ScheduleBuilder:
 		self.add_one_block_hold_one_student()
 		self.add_instructor_at_one_place_at_a_time_on_a_given_day()
 		self.add_instructor_student_at_one_place_at_a_time_on_a_given_day()
+		# self.add_instructors_have_max_14_hour_duty_day()
+		# self.add_flights_are_2_hours()
+		self.add_instructors_must_have_one_day_off_per_week()
 
 
 	def output_schedule(self):
@@ -150,6 +197,12 @@ class ScheduleBuilder:
 		solver.parameters.enumerate_all_solutions = True
 		solution_printer = SolutionPrinter(self.instructors, self.days, self.available_aircraft, self.schedule, 1, self.test_environment)
 		status = solver.Solve(self.model, solution_printer)
+		# print('\nStatistics')
+		# print('  - status         : {}'.format(status))
+		# print('  - conflicts      : %i' % solver.NumConflicts())
+		# print('  - branches       : %i' % solver.NumBranches())
+		# print('  - wall time      : %f s' % solver.WallTime())
+		# print('  - solutions found: %i' % solution_printer.solution_count())
 		return status, solution_printer.solution_log
 
 
