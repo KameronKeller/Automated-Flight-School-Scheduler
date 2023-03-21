@@ -18,19 +18,17 @@ def main():
 
     profile_builder = ProfileBuilder(file_path)
     instructors = profile_builder.build_instructor_profiles()
-    pp.pprint(instructors)
-    # for student in instructors['Jason Axt'].students:
-        # print(student.full_name)
 
     available_aircraft = {}
     aircraft_factory = AircraftFactory()
-    earliest_block = 7
-    latest_block = 17
+    # earliest_block = 7
+    # latest_block = 17
+    earliest_block = 0
+    latest_block = 24
     available_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'R22',
                                     model = 'R22',
-                                    num_aircraft = 1,
-                                    # num_aircraft = 6,
+                                    num_aircraft = 6,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block)
 
@@ -46,7 +44,8 @@ def main():
                                     model = 'RWSIM',
                                     num_aircraft = 1,
                                     earliest_block = earliest_block,
-                                    latest_block = latest_block)
+                                    latest_block = latest_block,
+                                    soloable=False)
 
     available_aircraft['C172'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'C172',
@@ -67,66 +66,12 @@ def main():
                                     model = 'FWSIM',
                                     num_aircraft = 1,
                                     earliest_block = earliest_block,
-                                    latest_block = latest_block)
+                                    latest_block = latest_block,
+                                    soloable=False)
 
-    # schedule_builder = ScheduleBuilder(instructors, aircraft, days)
     schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), available_aircraft)
-    schedule_builder.generate_model()
-    schedule_builder.add_constraints()
-    schedule_builder.output_schedule()
-
-
-
-    # parse_csv()
-    # generate_model()
-    # build_constraints()
-    # generate_schedule()
-
-
-
-
-
-    # # csv = CsvParser("submissions_data.csv")
-    # # csv.get_names()
-
-    # people = []
-
-    # with open('submissions_data.csv') as csv_file:
-    #     # csv_reader = csv.DictReader(csv_file)
-    #     csv_reader = csv.reader(csv_file)
-    #     for row in csv_reader:
-    #         unavailability = {
-    #             # "sunday" : row['Sunday - Unavailability'],
-    #             # "monday" : row['Monday - Unavailability'],
-    #             # "tuesday" : row['Tuesday - Unavailability'],
-    #             # "wednesday" : row['Wednesday - Unavailability'],
-    #             # "thursday" : row['Thursday - Unavailability'],
-    #             # "friday" : row['Friday - Unavailability'],
-    #             # "saturday" : row['Saturday - Unavailability']
-    #             "sunday" : row[12],
-    #             "monday" : row[13],
-    #             "tuesday" : row[14],
-    #             "wednesday" : row[15],
-    #             "thursday" : row[16],
-    #             "friday" : row[17],
-    #             "saturday" : row[18]
-
-    #         }
-    #         unavailability = CsvParser
-    #         person = Person(row[5], row[6], unavailability)
-    #         people.append(person)
-    #     # print(people[0].parse_unavailability(people[1].unavailability))
-    #     print(people[1].unavailability)
-    #         # name = row['What is your first name?'] + row['What is your last name?']
-    #         # if name in people:
-    #         #     print("Skipping duplicate: {}".format(name))
-    #         # else:
-    #         #     people.append(person)
-
-
-    #     # headers = csv_reader.fieldnames
-
-    #     # print(headers)
+    status, solution_log = schedule_builder.build_schedule()
+    print(status)
 
 
 if __name__ == "__main__":
