@@ -42,16 +42,12 @@ class ScheduleBuilder:
 																													aircraft.name,
 																													schedule_block))
 
-
-
-	def add_constraints(self):
-
+	def add_specified_flights_per_week(self):
 		# Each student must have the specified number of flights per week
-			# the sum of flights with a solo instructor must equal the spec
-			# the sum of flights with a dual instructor must equal the spec
 		for instructor in self.instructors.values():
 			for student in instructor.students:
 				for aircraft_model, flight_configuration in student.aircraft.items():
+					# the sum of flights with a solo instructor must equal the spec
 					if instructor.solo_placeholder and 'solo' in flight_configuration:
 						self.model.Add(
 							sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
@@ -60,8 +56,10 @@ class ScheduleBuilder:
 										for schedule_block in aircraft.schedule_blocks
 											if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule
 								) == flight_configuration['solo'])
+					# If the instructor is a solo instructor but solo is not in the flight configuration, skip over it
 					elif instructor.solo_placeholder and 'solo' not in flight_configuration:
 						continue
+					# the sum of flights with a dual instructor must equal the spec
 					elif not instructor.solo_placeholder and 'dual' in flight_configuration:
 						self.model.Add(
 							sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
@@ -70,6 +68,33 @@ class ScheduleBuilder:
 										for schedule_block in aircraft.schedule_blocks
 											if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule
 								) == flight_configuration['dual'])
+
+
+	def add_all_flights_on_different_day(self):
+		# Each flight must be on a different day
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for student in instructor.students:
+					# for aircraft_model in student.aircraft.keys():
+					self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for aircraft_model in student.aircraft.keys() for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
+						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+
+	def add_one_block_hold_one_student(self):
+		# Each aircraft can only hold one student per block, per day
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for aircraft_type in self.available_aircraft.values():
+					for aircraft_name, aircraft in aircraft_type.items():
+						for schedule_block in aircraft.schedule_blocks:
+							self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for student in instructor.students
+								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+		
+
+	def add_constraints(self):
+		self.add_specified_flights_per_week()
+		self.add_all_flights_on_different_day()
+		self.add_one_block_hold_one_student()
+
 
 
 						# self.model.Add(
@@ -144,23 +169,8 @@ class ScheduleBuilder:
 		# 					if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == flight_configuration['dual'])
 
 
-		# Each flight must be on a different day
-		for day in self.days:
-			for instructor in self.instructors.values():
-				for student in instructor.students:
-					# for aircraft_model in student.aircraft.keys():
-					self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for aircraft_model in student.aircraft.keys() for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
-						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
 
 
-		# Each aircraft can only hold one student per block, per day
-		for day in self.days:
-			for instructor in self.instructors.values():
-				for aircraft_type in self.available_aircraft.values():
-					for aircraft_name, aircraft in aircraft_type.items():
-						for schedule_block in aircraft.schedule_blocks:
-							self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for student in instructor.students
-								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
 
 
 	def output_schedule(self):
