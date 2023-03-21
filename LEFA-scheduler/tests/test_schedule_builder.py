@@ -8,6 +8,7 @@ from models.aircraft_factory import AircraftFactory
 from models.student import Student
 from models.calendar import Calendar
 import pprint as pp
+from collections import Counter
 
 class TestScheduleBuilder(unittest.TestCase):
 
@@ -218,50 +219,159 @@ class TestScheduleBuilder(unittest.TestCase):
 
 
 	def test_pvt_rw_has_desired_flights_per_week(self):
-		expected_aircraft = 'R22'
-		expected_num_flights = 3
+		expected_aircraft = {'R22' : 3}
 		student = StudentFactory.create_free_student(rating='Private', schedule_type='Rotor-Wing')
 		self.free_instructor.add_student(student)
 		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
-		self.assertEqual(expected_num_flights, len(solution_log['day_and_hour_blocks']))
-		self.assertIn(expected_aircraft, solution_log['aircraft_model'])
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
 		self.assertEqual(status, cp_model.FEASIBLE)
 
-	# def test_inst_rw_has_desired_flights_per_week(self):
-	# 	expected_aircraft_1 = 'R44'
-	# 	expected_num_flights_1 = 2
+	def test_inst_rw_has_desired_flights_per_week(self):
+		expected_aircraft = {'R44' : 2, 'RWSIM' : 1}
+		student = StudentFactory.create_free_student(rating='Instrument', schedule_type='Rotor-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
 
-	# 	expected_aircraft_2 = 'RWSIM'
-	# 	expected_num_flights_2 = 1
 
-	# 	student = StudentFactory.create_free_student(rating='Instrument', schedule_type='Rotor-Wing')
-	# 	self.free_instructor.add_student(student)
-	# 	schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
-	# 	status, solution_log = schedule_builder.build_schedule()
-	# 	pp.pprint(solution_log)
-		# self.assertEqual(expected_num_flights, len(solution_log['day_and_hour_blocks']))
-		# self.assertIn(expected_aircraft, solution_log['aircraft_model'])
-		# self.assertEqual(status, cp_model.FEASIBLE)
+	def test_com_rw_has_desired_flights_per_week(self):
+		expected_aircraft = {'R22' : 3}
+		student = StudentFactory.create_free_student(rating='Commercial', schedule_type='Rotor-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
 
-	# def test_com_rw_has_desired_flights_per_week(self):
-	# def test_cfi_rw_has_desired_flights_per_week(self):
-	# def test_cfii_rw_has_desired_flights_per_week(self):
-	# def test_pvt_fw_has_desired_flights_per_week(self):
-	# def test_inst_fw_has_desired_flights_per_week(self):
-	# def test_com_fw_has_desired_flights_per_week(self):
-	# def test_cfi_fw_has_desired_flights_per_week(self):
-	# def test_cfii_fw_has_desired_flights_per_week(self):
-	# def test_mei_fw_has_desired_flights_per_week(self):
-	# def test_me_fw_has_desired_flights_per_week(self):
+	def test_cfi_rw_has_desired_flights_per_week(self):
+		expected_aircraft = {'R22' : 2}
+		student = StudentFactory.create_free_student(rating='CFI', schedule_type='Rotor-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_cfii_rw_has_desired_flights_per_week(self):
+		expected_aircraft = {'R44' : 1, 'RWSIM' : 1}
+		student = StudentFactory.create_free_student(rating='CFII', schedule_type='Rotor-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_pvt_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'C172' : 3}
+		student = StudentFactory.create_free_student(rating='Private', schedule_type='Fixed-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_inst_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'C172' : 2, 'FWSIM' : 1}
+		student = StudentFactory.create_free_student(rating='Instrument', schedule_type='Fixed-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_com_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'C172' : 3, 'FWSIM' : 1}
+		student = StudentFactory.create_free_student(rating='Commercial', schedule_type='Fixed-Wing')
+
+		instructors = {}
+
+		primary_instructor = InstructorFactory.create_free_instructor()
+		primary_instructor.full_name = "Primary Instructor"
+		primary_instructor.add_student(student)
+		instructors[primary_instructor.full_name] = primary_instructor
+
+		solo_instructor_placeholder = InstructorFactory.create_free_instructor()
+		solo_instructor_placeholder.full_name = "SOLO FLIGHT"
+		solo_instructor_placeholder.solo_placeholder = True
+		solo_instructor_placeholder.add_student(student)
+		instructors[solo_instructor_placeholder.full_name] = solo_instructor_placeholder
+
+		schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_cfi_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'C172' : 1}
+		student = StudentFactory.create_free_student(rating='CFI', schedule_type='Fixed-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_cfii_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'C172' : 1, 'FWSIM' : 1}
+		student = StudentFactory.create_free_student(rating='CFII', schedule_type='Fixed-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_mei_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'BARON' : 3}
+		student = StudentFactory.create_free_student(rating='MEI', schedule_type='Fixed-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_com_me_fw_has_desired_flights_per_week(self):
+		expected_aircraft = {'BARON' : 3}
+		student = StudentFactory.create_free_student(rating='ME', schedule_type='Fixed-Wing')
+		self.free_instructor.add_student(student)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
+
+	def test_com_fw_has_specified_solo_flights(self):
+		# This test works because only a solo instructor is created
+		expected_aircraft = {'C172' : 1}
+		student = StudentFactory.create_free_student(rating='Commercial', schedule_type='Fixed-Wing')
+
+		instructors = {}
+
+		solo_instructor_placeholder = InstructorFactory.create_free_instructor()
+		solo_instructor_placeholder.full_name = "SOLO FLIGHT"
+		solo_instructor_placeholder.solo_placeholder = True
+		solo_instructor_placeholder.add_student(student)
+		instructors[solo_instructor_placeholder.full_name] = solo_instructor_placeholder
+
+		schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		flight_counts = dict(Counter(solution_log['aircraft_model']))
+		self.assertEqual(expected_aircraft, flight_counts)
+		self.assertEqual(status, cp_model.FEASIBLE)
 
   
-	# def test_student_has_desired_num_flights_per_week(self):
-	# 	student = StudentFactory.create_free_student()
-	# 	self.free_instructor.add_student(student)
-	# 	schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.available_aircraft, test_environment=True)
-	# 	status, solution_log = schedule_builder.build_schedule()
-	# 	self.assertEqual(status, cp_model.INFEASIBLE)
 
 	# def test_an_instructor_student_has_no_conflicts(self):
 	#     assert False
