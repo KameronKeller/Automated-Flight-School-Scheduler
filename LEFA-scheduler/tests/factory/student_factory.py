@@ -32,3 +32,7 @@ class StudentFactory:
 	@staticmethod
 	def create_four_block_three_days_student(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_four_odd_blocks_three_days(), rating=rating, schedule_type=schedule_type, instructor=instructor):
 		return Student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor)
+
+	@staticmethod
+	def create_one_day_free_only_student(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_completely_free_one_day_only(), rating=rating, schedule_type=schedule_type, instructor=instructor):
+		return Student(first_name=first_name, last_name=last_name, unavailability=unavailability, rating=rating, schedule_type=schedule_type, instructor=instructor)
