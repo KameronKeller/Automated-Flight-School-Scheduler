@@ -125,49 +125,25 @@ class ScheduleBuilder:
 
 
 	def add_instructor_student_at_one_place_at_a_time_on_a_given_day(self):
-		# possible_student_blocks = []
 		for day in self.days:
 			for instructor in self.instructors.values():
+				# if the instructor is an InstructorStudent
 				if isinstance(instructor, InstructorStudent):
 					for student in instructor.students:
 						for aircraft_model in student.aircraft.keys():
 							for aircraft in self.available_aircraft[aircraft_model].values():
 								for schedule_block in aircraft.schedule_blocks:
+									# If the key is in the schedule
 									if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule:
+										# Iterate over the InstructorStudent's needs for the same day and schedule_block as their students
 										for instructor_student_aircraft_model in instructor.aircraft.keys():
 											for instructor_student_aircraft in self.available_aircraft[instructor_student_aircraft_model].values():
-												# print(instructor_student_aircraft.name)
+												# if the InstructorStudent has a key in the schedule with their own instructor at the same time as their students
 												if (day, instructor.instructor, instructor.full_name, instructor_student_aircraft.name, schedule_block) in self.schedule:
+													# Add the implication that the InstructorStudent is not available to their instructor for that day and time block
 													self.model.AddImplication(
 														self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)],
 														self.schedule[(day, instructor.instructor, instructor.full_name, instructor_student_aircraft.name, schedule_block)].Not())
-
-										# possible_student_blocks.append((day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
-										# if (day, instructor.instructor.full_name, instructor.full_name, aircraft.name, schedule_block) in self.schedule:
-										# 	self.model.AddImplication(
-										# 		self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)],
-										# 		self.schedule[(day, instructor.instructor.full_name, instructor.full_name, aircraft.name, schedule_block)].Not())
-
-		# for day in self.days:
-		# 	for instructor in self.instructors.values():
-		# 		if isinstance(instructor, InstructorStudent):
-		# 			for aircraft_model in instructor.aircraft.keys():
-		# 				for aircraft in self.available_aircraft[aircraft_model].values():
-		# 					for schedule_block in aircraft.schedule_blocks:
-
-
-
-
-
-					# self.model.AddImplication(
-					# 	self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
-					# 		for student in instructor.students
-					# 			for aircraft_model in student.aircraft.keys()
-					# 				for aircraft in self.available_aircraft[aircraft_model].values()
-					# 					for schedule_block in aircraft.schedule_blocks
-
-					# 	, )
-					# print(instructor.full_name)
 
 
 
