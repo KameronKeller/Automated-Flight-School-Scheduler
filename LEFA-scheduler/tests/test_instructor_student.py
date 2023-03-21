@@ -8,10 +8,10 @@ class TestInstructorStudent(unittest.TestCase):
         self.instructor_student = InstructorStudentFactory.create_instructor_student()
 
     def test_attributes(self):
-        self.assertEqual(self.instructor_student.first_name, 'first')
-        self.assertEqual(self.instructor_student.last_name, 'last')
-        self.assertEqual(self.instructor_student.rating, 'rating')
-        self.assertEqual(self.instructor_student.schedule_type, 'schedule_type')
+        self.assertEqual(self.instructor_student.first_name, 'InstructorStudent')
+        self.assertEqual(self.instructor_student.last_name, 'L')
+        self.assertEqual(self.instructor_student.rating, 'Private')
+        self.assertEqual(self.instructor_student.schedule_type, 'Rotor-Wing')
         self.assertEqual(self.instructor_student.instructor, 'instructor')
 
 if __name__ == '__main__':
