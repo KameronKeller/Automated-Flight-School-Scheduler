@@ -1,6 +1,7 @@
 from ortools.sat.python import cp_model
 from models.instructor import Instructor
 from models.solution_printer import SolutionPrinter
+import pprint as pp
 # from models.aircraft import Aircraft
 
 class ScheduleBuilder:
@@ -11,40 +12,9 @@ class ScheduleBuilder:
 		self.available_aircraft = available_aircraft
 		self.model = cp_model.CpModel()
 		self.schedule = {}
-		self.solo_flights = []
 		self.test_environment = test_environment
 
 	def generate_model(self):
-					# solo_instructor = Instructor(first_name='SOLO FLIGHT', last_name=str(solo_flight_id), unavailability=solo_instructor_unavailability)
-					# solo_flight_id += 1 # increment the ID
-					# solo_instructor.add_student(student)
-
-							# if instructor.solo_placeholder and not aircraft.soloable:
-							# 	print(aircraft.name)
-							# 	continue
-							# else:
-									# if 'solo' in flight_configuration:
-
-									# # 	# if the schedule_block and next_hour are not in the unavailability set, the student is available
-									# 	if schedule_block not in student_unavailability or next_hour not in student_unavailability:
-									# 		solo_instructors[solo_instructor.full_name] = solo_instructor
-									# 		flight_key = (day, solo_instructor.full_name, student.full_name, aircraft.name, schedule_block)
-									# # 		self.solo_flights.append(flight_key) # keep track of solo flights for adding constraints later
-									# 		self.schedule[flight_key] = self.model.NewBoolVar('{} {} {} {} {}'.format(
-									# 																					day,
-									# 																					solo_instructor.full_name,
-									# 																					student.full_name,
-									# 																					aircraft.name,
-									# 																					schedule_block))
-									# # 		# self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.schedule[(day, 'SOLO FLIGHT', student.full_name, aircraft.name, schedule_block)])
-
-
-									# else: # Currently flight configurations are always dual or solo
-										# print('({}, {}, {}, {}, {})'.format(day,instructor.full_name,student.full_name,aircraft.name,schedule_block))
-										# if instructor.solo_placeholder and not aircraft.soloable:
-										# 	print("name: {} solo_placeholder: {} aircraft.name: {} aircraft.soloable: {}".format(instructor.full_name, instructor.solo_placeholder, aircraft.name, aircraft.soloable))
-										# 	continue
-										# else:
 		for day in self.days:
 			for instructor in self.instructors.values():
 				for student in instructor.students:
@@ -71,75 +41,107 @@ class ScheduleBuilder:
 																													student.full_name,
 																													aircraft.name,
 																													schedule_block))
-				# Add the newly created solo instructors to the instructors dictionary
-		# self.instructors = self.instructors | solo_instructors
-		# solo_instructors.update(self.instructors)
-		# print(self.instructors)
+
 
 
 	def add_constraints(self):
-		# # Instructors are not scheduled during their unavailable blocks
-		# for day in self.days:
-		# 	for instructor in self.instructors.values():
-		# 		# for aircraft_type in self.available_aircraft.values():
-		# 			# for aircraft_name, aircraft in aircraft_type.items():
-		# 		self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft_name, schedule_block)] for student in instructor.students for aircraft_type in self.available_aircraft.values() for aircraft_name, aircraft in aircraft_type.items() for schedule_block in instructor.unavailability 
-		# 			if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == 0)
-		# 					# self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft_name, schedule_block)] for student in instructor.students for schedule_block in instructor.unavailability 
-		# 					# 	if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == 0)
 
-		# 	# EXAMPLE:
-		#   # Availability restriction for s1
-  		# 	# model.Add(sum(flight[('John', 's1', k, '8am_to_10am')] for k in aircrafts) + sum(flight[('Emily', 's1', k, '8am_to_10am')] for k in aircrafts) == 0)
-
-		# # Students are not scheduled during their unavailable blocks
-		# for day in self.days:
-		# 	for instructor in self.instructors.values():
-		# 		for student in instructor.students:
-		# 			for aircraft_model, flight_configuration in student.aircraft.items():
-		# 				for aircraft in self.available_aircraft[aircraft_model].values():
-		# 					self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for schedule_block in aircraft.schedule_blocks) == 0)
-		# 					# for schedule_block in aircraft.schedule_blocks: 
-		# 						# self.model.AddForbiddenAssignments()
-
-		# for day in self.days:
-		# 	for instructor in self.instructors.values():
-		# 		for student in instructor.students:
-		# # 		for aircraft_type in self.available_aircraft.values():
-		# # 			for aircraft_name, aircraft in aircraft_type.items():
-		# 					self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft_name, schedule_block)] for student in instructor.students for aircraft_type in self.available_aircraft.values() for aircraft_name, aircraft in aircraft_type.items() for schedule_block in student.unavailability
-		# 						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == 0)
-
-		# Each student must have specified number of flights per week
+		# Each student must have the specified number of flights per week
+			# the sum of flights with a solo instructor must equal the spec
+			# the sum of flights with a dual instructor must equal the spec
 		for instructor in self.instructors.values():
 			for student in instructor.students:
-				# print(student.full_name + "=======================")
 				for aircraft_model, flight_configuration in student.aircraft.items():
-					# for aircraft in self.available_aircraft[aircraft_model].values():
-						# print(self.available_aircraft[aircraft_model])
-						self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
-							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == flight_configuration['dual'])
+					if instructor.solo_placeholder and 'solo' in flight_configuration:
+						self.model.Add(
+							sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
+								for day in self.days
+									for aircraft in self.available_aircraft[aircraft_model].values()
+										for schedule_block in aircraft.schedule_blocks
+											if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule
+								) == flight_configuration['solo'])
+					elif instructor.solo_placeholder and 'solo' not in flight_configuration:
+						continue
+					elif not instructor.solo_placeholder and 'dual' in flight_configuration:
+						self.model.Add(
+							sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
+								for day in self.days
+									for aircraft in self.available_aircraft[aircraft_model].values()
+										for schedule_block in aircraft.schedule_blocks
+											if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule
+								) == flight_configuration['dual'])
 
-						# for configuration, num_flights in flight_configuration.items():
-						# 	self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
-						# 		if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == num_flights)
-							# print(configuration)
 
-						# if 'solo' in flight_configuration:
-						# 	self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
-						# 		if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == flight_configuration['solo'])
+						# self.model.Add(
+						# 	sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
+						# 		for day in self.days
+						# 			for aircraft in self.available_aircraft[aircraft_model].values()
+						# 				for schedule_block in aircraft.schedule_blocks
+						# 					if not aircraft.soloable
 
-		# # Prevent solo flights in non-soloable aircraft
+						# 					# if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule
+						# 					# and not aircraft.soloable
+						# 			) == 0)
+
+					# else:
+					# 	self.model.Add(
+					# 		sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
+					# 			for day in self.days
+					# 				for aircraft_model, flight_configuration in student.aircraft.items()
+					# 					for aircraft in self.available_aircraft[aircraft_model].values()
+					# 						for schedule_block in aircraft.schedule_blocks
+					# 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule
+					# 				) == flight_configuration['dual'])
+
+
+		# If solo is forbidden in an aircraft, no solo will take place in that aircraft
+		# forbidden = self.schedule[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',7)]
+		# self.model.AddForbiddenAssignments([forbidden],[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',7)])
+
 		# for day in self.days:
 		# 	for instructor in self.instructors.values():
 		# 		for student in instructor.students:
 		# 			for aircraft_model, flight_configuration in student.aircraft.items():
 		# 				for aircraft in self.available_aircraft[aircraft_model].values():
 		# 					if instructor.solo_placeholder and not aircraft.soloable:
-		# 						self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for schedule_block in aircraft.schedule_blocks
-		# 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == 0)
+		# 						for schedule_block in aircraft.schedule_blocks:
+		# 							print((day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
+		# 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule:
+		# 								self.model.Add(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] == 0)
 
 
+		# self.model.Add(self.schedule[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',7)] == 0)
+		# self.model.Add(self.schedule[('Tuesday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',7)] == 0)
+		# self.model.Add(self.schedule[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',9)] == 0)
+		# self.model.Add(self.schedule[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',11)] == 0)
+		# self.model.Add(self.schedule[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',15)] == 0)
+		# self.model.Add(self.schedule[('Monday','SOLO FLIGHT 2','Peyter Cardow','FWSIM_1',17)] == 0)
+
+
+
+
+# 		schedule_vars = [(day_var, instructor_var, student_var, aircraft_var, block_var) for day_var, instructor_var, student_var, aircraft_var, block_var in schedule]
+
+# # List of forbidden assignments
+# forbidden_tuples = [(0, "John Doe", "Jane Doe", "Aircraft 1", "Block 1")]
+
+# # Add forbidden assignments to the solver
+# solver.AddForbiddenAssignments(schedule_vars, forbidden_tuples)
+
+
+
+
+
+		# ========= OLD CONSTRAINTS ================
+		# # Each student must have specified number of flights per week
+		# for instructor in self.instructors.values():
+		# 	for student in instructor.students:
+		# 		# print(student.full_name + "=======================")
+		# 		for aircraft_model, flight_configuration in student.aircraft.items():
+		# 			# for aircraft in self.available_aircraft[aircraft_model].values():
+		# 				# print(self.available_aircraft[aircraft_model])
+		# 				self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for day in self.days for aircraft in self.available_aircraft[aircraft_model].values() for schedule_block in aircraft.schedule_blocks
+		# 					if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == flight_configuration['dual'])
 
 
 		# Each flight must be on a different day
@@ -159,10 +161,7 @@ class ScheduleBuilder:
 						for schedule_block in aircraft.schedule_blocks:
 							self.model.AddAtMostOne(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] for student in instructor.students
 								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
-			# for aircraft in self.available_aircraft.values():
-				# print(aircraft)
 
-		# Each flight must have an instructor
 
 	def output_schedule(self):
 		solver = cp_model.CpSolver()
@@ -171,13 +170,7 @@ class ScheduleBuilder:
 		solution_printer = SolutionPrinter(self.instructors, self.days, self.available_aircraft, self.schedule, 1, self.test_environment)
 		status = solver.Solve(self.model, solution_printer)
 		return status, solution_printer.solution_log
-		# # Statistics.
-		# print('\nStatistics')
-		# print('  - status         : {}'.format(status))
-		# print('  - conflicts      : %i' % solver.NumConflicts())
-		# print('  - branches       : %i' % solver.NumBranches())
-		# print('  - wall time      : %f s' % solver.WallTime())
-		# print('  - solutions found: %i' % solution_printer.solution_count())
+
 
 	def build_schedule(self):
 		self.generate_model()
