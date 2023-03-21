@@ -17,3 +17,7 @@ class InstructorFactory:
 	@staticmethod
 	def create_unavailable_instructor(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_completely_unavailable()):
 		return Instructor(first_name, last_name, unavailability)
+
+	@staticmethod
+	def create_one_block_instructor(first_name=first_name, last_name=last_name, unavailability=UnavailabilityFactory.get_one_block_free()):
+		return Instructor(first_name, last_name, unavailability)
