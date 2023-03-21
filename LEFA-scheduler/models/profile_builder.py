@@ -35,6 +35,18 @@ class ProfileBuilder:
 		}
 
 	def build_instructor_profiles(self):
+		solo_flight_id = 0
+		solo_instructor_unavailability = {
+				'Sunday': '',
+				'Monday': '',
+				'Tuesday': '',
+				'Wednesday': '',
+				'Thursday': '',
+				'Friday': '',
+				'Saturday': ''}
+
+
+
 		profiles = self.create_profiles()
 		instructors = {}
 		students = set()
@@ -49,7 +61,7 @@ class ProfileBuilder:
 
 				instructors[full_name] = Instructor(profile['first_name'], profile['last_name'], unavailability)
 			else:
-				students.add(profile['full_name'])
+				students.add(profile['full_name']) # keep track of students for second pass
 
 		for profile in profiles:
 			instructor_name = profile['instructor']
@@ -65,7 +77,18 @@ class ProfileBuilder:
 					instructors[instructor_name].add_student(instructor_student)
 					instructors[profile['full_name']] = instructor_student
 				else:
+					# create the students
 					student = Student(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], profile['schedule_type'], instructors[instructor_name])
+					
+					# if they need solo, add a 'solo instructor'
+					for aircraft_model, flight_configuration in student.aircraft.items():
+						if 'solo' in flight_configuration:
+							solo_instructor = Instructor(first_name='SOLO FLIGHT', last_name=str(solo_flight_id), unavailability=solo_instructor_unavailability, solo_placeholder=True)
+							solo_flight_id += 1
+							solo_instructor.add_student(student)
+							instructors[solo_instructor.full_name] = solo_instructor
+
+
 					instructors[instructor_name].add_student(student)
 			else:
 				if instructor_name != "I am an instructor":
