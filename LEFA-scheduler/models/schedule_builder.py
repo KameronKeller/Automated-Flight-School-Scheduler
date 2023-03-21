@@ -109,18 +109,6 @@ class ScheduleBuilder:
 											for aircraft_model in student.aircraft.keys()
 												for aircraft in self.available_aircraft[aircraft_model].values()
 													if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
-								# if isinstance(instructor, InstructorStudent):
-								# 	self.model.AddImplication(
-								# 		(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
-								# 			for student in instructor.students
-								# 				for aircraft_model in student.aircraft.keys()
-								# 					for aircraft in self.available_aircraft[aircraft_model].values()
-								# 						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule),
-								# 		(self.schedule[(day, instructor_instructor.full_name, instructor.full_name, aircraft.name, schedule_block)].Not() # an instructor_instructor is the instructor of an InstructorStudent
-								# 			for instructor_instructor in self.instructors.values()
-								# 				for aircraft_model in instructor.aircraft.keys()
-								# 					for aircraft in self.available_aircraft[aircraft_model].values()
-								# 						if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule))
 
 
 
