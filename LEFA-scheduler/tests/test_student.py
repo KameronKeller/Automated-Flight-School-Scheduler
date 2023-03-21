@@ -8,11 +8,11 @@ class TestStudent(unittest.TestCase):
         self.student = StudentFactory.create_student()
 
     def test_attributes(self):
-        self.assertEqual(self.student.rating, 'rating')
+        self.assertEqual(self.student.rating, 'Private')
         self.assertEqual(self.student.instructor, 'instructor')
-        self.assertEqual(self.student.first_name, 'first')
-        self.assertEqual(self.student.last_name, 'last')
-        self.assertEqual(self.student.schedule_type, 'schedule_type')
+        self.assertEqual(self.student.first_name, 'Student')
+        self.assertEqual(self.student.last_name, 'L')
+        self.assertEqual(self.student.schedule_type, 'Rotor-Wing')
 
     def test_Private_Rotor_Wing_aircraft_requirements(self):
         expected_aircraft = 'R22'
