@@ -14,6 +14,7 @@ class ScheduleBuilder:
 		self.available_aircraft = available_aircraft
 		self.model = cp_model.CpModel()
 		self.schedule = {}
+		self.works_day = {}
 		self.test_environment = test_environment
 		self.all_aircraft_names = self.get_all_aircraft_names()
 
@@ -25,6 +26,12 @@ class ScheduleBuilder:
 		return all_aircraft_names
 
 	def generate_model(self):
+		# for tracking days off
+		for day in self.days:
+			for instructor in self.instructors.values():
+				self.works_day[(day, instructor.full_name)] = self.model.NewBoolVar('{} {}'.format(day, instructor.full_name))
+
+
 		for day in self.days:
 			for instructor in self.instructors.values():
 				for student in instructor.students:
@@ -36,7 +43,7 @@ class ScheduleBuilder:
 								student_unavailability = student.unavailability[day]
 								instructor_unavailability = instructor.unavailability[day]
 								combined_unavailability = student_unavailability.union(instructor_unavailability)
-								if schedule_block not in combined_unavailability or next_hour not in combined_unavailability:
+								if schedule_block not in combined_unavailability and next_hour not in combined_unavailability:
 									if instructor.solo_placeholder and not aircraft.soloable:
 										continue
 									else:
@@ -51,6 +58,8 @@ class ScheduleBuilder:
 																													student.full_name,
 																													aircraft.name,
 																													schedule_block))
+										self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.works_day[(day, instructor.full_name)])
+
 
 	def add_specified_flights_per_week(self):
 		# Each student must have the specified number of flights per week
@@ -205,13 +214,15 @@ class ScheduleBuilder:
 
 	def add_instructors_must_have_one_day_off_per_week(self):
 		for instructor in self.instructors.values():
-			for student in instructor.students:
-				for aircraft_model, flight_configuration in student.aircraft.items():
-					for aircraft in self.available_aircraft[aircraft_model].values():
-						for schedule_block in aircraft.schedule_blocks:
-							self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
-								for day in self.days
-									if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) < 7)
+			self.model.Add(sum(self.works_day[(day, instructor.full_name)] for day in self.days) < 7)
+		# for instructor in self.instructors.values():
+		# 	for student in instructor.students:
+		# 		for aircraft_model, flight_configuration in student.aircraft.items():
+		# 			for aircraft in self.available_aircraft[aircraft_model].values():
+		# 				for schedule_block in aircraft.schedule_blocks:
+		# 					self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+		# 						for day in self.days
+		# 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) < 7)
 
 
 
@@ -223,7 +234,7 @@ class ScheduleBuilder:
 		self.add_instructor_student_at_one_place_at_a_time_on_a_given_day()
 		# self.add_instructors_have_max_14_hour_duty_day()
 		self.add_flights_are_2_hours()
-		# self.add_instructors_must_have_one_day_off_per_week()
+		self.add_instructors_must_have_one_day_off_per_week()
 
 
 	def output_schedule(self):
