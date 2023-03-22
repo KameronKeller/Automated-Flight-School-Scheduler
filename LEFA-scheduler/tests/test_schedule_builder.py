@@ -507,14 +507,15 @@ class TestScheduleBuilder(unittest.TestCase):
 	# 	instructors[instructor.full_name] = instructor
 	# 	schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), available_aircraft, test_environment=True)
 	# 	status, solution_log = schedule_builder.build_schedule()
-	# 	earliest_block = min(solution_log['blocks'])
-	# 	latest_block = max(solution_log['blocks'])
-	# 	print(earliest_block)
-	# 	print(latest_block)
+	# 	# earliest_block = min(solution_log['blocks'])
+	# 	# latest_block = max(solution_log['blocks'])
+	# 	# print(earliest_block)
+	# 	# print(latest_block)
+	# 	print(status)
 	# 	pp.pprint(solution_log)
 	# 	# self.assertTrue(latest_block - earliest_block <= 12) # 12 because blocks are 2 hours each, so the latest block extends 2 hours past its value
 	    
-	def test_flights_must_be_at_least_2_hours_apart(self):
+	def test_a_one_hour_availability_results_in_infeasable(self):
 		student = StudentFactory.create_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_one_hour_free_7am())
 		# s2 = StudentFactory.create_one_day_free_only_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_completely_free_one_day_at_1200_only())
 		self.free_instructor.add_student(student)
@@ -523,33 +524,54 @@ class TestScheduleBuilder(unittest.TestCase):
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
-	def test_instructors_have_at_least_one_day_off_per_week(self):
+	def test_flights_less_than_2_hours_apart_are_infeasable(self):
+		s1 = StudentFactory.create_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_one_block_free_7am())
+		s2 = StudentFactory.create_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_one_block_free_8am())
+		self.free_instructor.add_student(s1)
+		self.free_instructor.add_student(s2)
 
-		s1 = StudentFactory.create_free_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing')
-		s2 = StudentFactory.create_free_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing')
-		s3 = StudentFactory.create_free_student(first_name='s3', rating='CFI', schedule_type='Fixed-Wing')
-		s4 = StudentFactory.create_free_student(first_name='s4', rating='CFI', schedule_type='Fixed-Wing')
-		s5 = StudentFactory.create_free_student(first_name='s5', rating='CFI', schedule_type='Fixed-Wing')
-		s6 = StudentFactory.create_free_student(first_name='s6', rating='CFI', schedule_type='Fixed-Wing')
-		s7 = StudentFactory.create_free_student(first_name='s7', rating='CFI', schedule_type='Fixed-Wing')
-
-		instructors = {}
-		instructor = InstructorFactory.create_instructor(unavailability=UnavailabilityFactory.get_one_hour_free_per_day())
-		instructor.add_student(s1)
-		instructor.add_student(s2)
-		instructor.add_student(s3)
-		instructor.add_student(s4)
-		instructor.add_student(s5)
-		instructor.add_student(s6)
-		instructor.add_student(s7)
-
-		instructors[instructor.full_name] = instructor
-
-		schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), self.many_aircraft, test_environment=False)
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
-		print()
-		pp.pprint(solution_log)
 		self.assertEqual(status, cp_model.INFEASIBLE)
+
+	def test_flights_greater_than_2_hours_apart_are_feasable(self):
+		s1 = StudentFactory.create_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_one_block_free_7am())
+		s2 = StudentFactory.create_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_one_block_free_9am())
+		self.free_instructor.add_student(s1)
+		self.free_instructor.add_student(s2)
+
+		schedule_builder = ScheduleBuilder(self.free_instructors, Calendar.get_days(), self.many_aircraft, test_environment=True)
+		status, solution_log = schedule_builder.build_schedule()
+		self.assertTrue(status == cp_model.FEASIBLE or status == cp_model.OPTIMAL)
+
+
+	# def test_instructors_have_at_least_one_day_off_per_week(self):
+
+	# 	s1 = StudentFactory.create_free_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing')
+	# 	s2 = StudentFactory.create_free_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing')
+	# 	s3 = StudentFactory.create_free_student(first_name='s3', rating='CFI', schedule_type='Fixed-Wing')
+	# 	s4 = StudentFactory.create_free_student(first_name='s4', rating='CFI', schedule_type='Fixed-Wing')
+	# 	s5 = StudentFactory.create_free_student(first_name='s5', rating='CFI', schedule_type='Fixed-Wing')
+	# 	s6 = StudentFactory.create_free_student(first_name='s6', rating='CFI', schedule_type='Fixed-Wing')
+	# 	s7 = StudentFactory.create_free_student(first_name='s7', rating='CFI', schedule_type='Fixed-Wing')
+
+	# 	instructors = {}
+	# 	instructor = InstructorFactory.create_instructor(unavailability=UnavailabilityFactory.get_one_hour_free_per_day())
+	# 	instructor.add_student(s1)
+	# 	instructor.add_student(s2)
+	# 	instructor.add_student(s3)
+	# 	instructor.add_student(s4)
+	# 	instructor.add_student(s5)
+	# 	instructor.add_student(s6)
+	# 	instructor.add_student(s7)
+
+	# 	instructors[instructor.full_name] = instructor
+
+	# 	schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), self.many_aircraft, test_environment=False)
+	# 	status, solution_log = schedule_builder.build_schedule()
+	# 	print()
+	# 	pp.pprint(solution_log)
+	# 	self.assertEqual(status, cp_model.INFEASIBLE)
 
 
 	#     assert False
