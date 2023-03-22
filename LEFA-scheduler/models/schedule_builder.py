@@ -15,6 +15,7 @@ class ScheduleBuilder:
 		self.model = cp_model.CpModel()
 		self.schedule = {}
 		self.works_day = {}
+		self.duty_day = {}
 		self.test_environment = test_environment
 		self.all_aircraft_names = self.get_all_aircraft_names()
 
@@ -47,6 +48,7 @@ class ScheduleBuilder:
 									if instructor.solo_placeholder and not aircraft.soloable:
 										continue
 									else:
+										self.duty_day[(day, instructor.full_name, schedule_block)] = self.model.NewBoolVar('{} {} {}'.format(day, instructor.full_name, schedule_block))
 										self.schedule[(
 													day,
 													instructor.full_name,
@@ -59,6 +61,7 @@ class ScheduleBuilder:
 																													aircraft.name,
 																													schedule_block))
 										self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.works_day[(day, instructor.full_name)])
+										self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.duty_day[(day, instructor.full_name, schedule_block)])
 
 
 	def add_specified_flights_per_week(self):
@@ -153,28 +156,51 @@ class ScheduleBuilder:
 
 
 	def add_instructors_have_max_14_hour_duty_day(self):
-		possible_blocks = Calendar.get_possible_blocks()
+		# possible_blocks = Calendar.get_possible_blocks()
+		last_possible_block = 24
+		possible_blocks = list(range(0, last_possible_block + 1))
 		max_difference = 12
-		# on any given day
 		for day in self.days:
-			# for each instructor
 			for instructor in self.instructors.values():
-				for student in instructor.students:
-					for aircraft_model in student.aircraft.keys():
-						for aircraft in self.available_aircraft[aircraft_model].values():
-							for schedule_block in aircraft.schedule_blocks:
-								for next_student in instructor.students:
-									# Skip over the student if they are the same student
-									if next_student != student:
-										for next_aircraft_model in next_student.aircraft.keys():
-											for next_aircraft in self.available_aircraft[aircraft_model].values():
-												for next_schedule_block in next_aircraft.schedule_blocks:
-													current_block = (day, instructor.full_name, student.full_name, aircraft.name, schedule_block)
-													other_block = (day, instructor.full_name, next_student.full_name, next_aircraft.name, next_schedule_block + max_difference)
-													if current_block in self.schedule:
-														if other_block in self.schedule:
-															# self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
-															self.model.AddInverse([self.schedule[current_block]], [self.schedule[other_block]])
+				for possible_block in possible_blocks:
+					current_block = (day, instructor.full_name, possible_block)
+					if current_block in self.duty_day:
+						banned_blocks = []
+						for i in range(possible_block + max_difference, last_possible_block + 1):
+							banned_blocks.append((day, instructor.full_name, i))
+
+						for banned_block in banned_blocks:	
+							if banned_block in self.duty_day:
+								print(banned_block)
+								self.model.AddImplication(self.duty_day[current_block], self.duty_day[banned_block].Not())
+					# # other_block = (day, instructor.full_name, possible_block + max_difference)
+					# # if current_block in self.duty_day:
+					# 	print("current {}".format(current_block))
+					# # if other_block in self.duty_day:
+					# 	print("other {}".format(other_block))
+
+		# possible_blocks = Calendar.get_possible_blocks()
+		# max_difference = 12
+		# # on any given day
+		# for day in self.days:
+		# 	# for each instructor
+		# 	for instructor in self.instructors.values():
+		# 		for student in instructor.students:
+		# 			for aircraft_model in student.aircraft.keys():
+		# 				for aircraft in self.available_aircraft[aircraft_model].values():
+		# 					for schedule_block in aircraft.schedule_blocks:
+		# 						for next_student in instructor.students:
+		# 							# Skip over the student if they are the same student
+		# 							if next_student != student:
+		# 								for next_aircraft_model in next_student.aircraft.keys():
+		# 									for next_aircraft in self.available_aircraft[aircraft_model].values():
+		# 										for next_schedule_block in next_aircraft.schedule_blocks:
+		# 											current_block = (day, instructor.full_name, student.full_name, aircraft.name, schedule_block)
+		# 											other_block = (day, instructor.full_name, next_student.full_name, next_aircraft.name, next_schedule_block + max_difference)
+		# 											if current_block in self.schedule:
+		# 												if other_block in self.schedule:
+		# 													# self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
+		# 													self.model.AddInverse([self.schedule[current_block]], [self.schedule[other_block]])
 
 	def add_flights_are_2_hours(self):
 		for day in self.days:
@@ -232,7 +258,7 @@ class ScheduleBuilder:
 		self.add_one_block_hold_one_student()
 		self.add_instructor_at_one_place_at_a_time_on_a_given_day()
 		self.add_instructor_student_at_one_place_at_a_time_on_a_given_day()
-		# self.add_instructors_have_max_14_hour_duty_day()
+		self.add_instructors_have_max_14_hour_duty_day()
 		self.add_flights_are_2_hours()
 		self.add_instructors_must_have_one_day_off_per_week()
 
