@@ -94,21 +94,21 @@ class TestScheduleBuilder(unittest.TestCase):
 	def test_flights_not_scheduled_when_instructor_unavailable(self):
 		student = StudentFactory.create_free_student()
 		self.unavailable_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.unavailable_instructors, self.calendar.days, self.available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.unavailable_instructors, self.calendar, self.available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
 	def test_flights_not_scheduled_when_student_unavailable(self):
 		student = StudentFactory.create_free_student()
 		self.unavailable_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.unavailable_instructors, self.calendar.days, self.available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.unavailable_instructors, self.calendar, self.available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
 	def test_student_has_one_flight_per_day_max(self):
 		student = StudentFactory.create_three_blocks_three_days_student(first_name='Student', last_name='L', rating='Private', schedule_type='Rotor-Wing', instructor=self.free_instructor.full_name)
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertTrue(len(solution_log['days']) == len(set(solution_log['days'])))
 		self.assertEqual(status, cp_model.FEASIBLE)
@@ -144,7 +144,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		solo_instructor_placeholder.add_student(student)
 		instructors[solo_instructor_placeholder.full_name] = solo_instructor_placeholder
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, available_aircraft_c172, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, available_aircraft_c172, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertTrue(len(solution_log['days']) == len(set(solution_log['days'])))
 		self.assertEqual(status, cp_model.FEASIBLE)
@@ -154,7 +154,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		# student requires 3 flights
 		student = StudentFactory.create_one_block_student(first_name='Student', last_name='L', rating='Private', schedule_type='Rotor-Wing', instructor=self.free_instructor.full_name)
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -162,7 +162,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		# student requires 3 flights
 		student = StudentFactory.create_free_student()
 		self.one_block_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.one_block_instructors, self.calendar.days, self.available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.one_block_instructors, self.calendar, self.available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -182,7 +182,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		
 	# 	self.free_instructor.add_student(student_1)
 	# 	self.free_instructor.add_student(student_2)
-	# 	schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, available_aircraft_2, test_environment=True)
+	# 	schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, available_aircraft_2, test_environment=True)
 	# 	status, solution_log = schedule_builder.build_schedule()
 	# 	self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -202,7 +202,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		
 		self.free_instructor.add_student(student_1)
 		self.free_instructor.add_student(student_2)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, available_aircraft_2, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, available_aircraft_2, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -262,7 +262,7 @@ class TestScheduleBuilder(unittest.TestCase):
 	# 						latest_block = 17)
 
 		
-	# 	schedule_builder = ScheduleBuilder(instructors, self.calendar.days, available_aircraft, test_environment=True)
+	# 	schedule_builder = ScheduleBuilder(instructors, self.calendar, available_aircraft, test_environment=True)
 	# 	status, solution_log = schedule_builder.build_schedule()
 	# 	print()
 	# 	pp.pprint(solution_log)
@@ -299,7 +299,7 @@ class TestScheduleBuilder(unittest.TestCase):
 	# 	solo_instructor_placeholder.add_student(student)
 	# 	instructors[solo_instructor_placeholder.full_name] = solo_instructor_placeholder
 
-	# 	schedule_builder = ScheduleBuilder(instructors, self.calendar.days, available_aircraft_c172, test_environment=True)
+	# 	schedule_builder = ScheduleBuilder(instructors, self.calendar, available_aircraft_c172, test_environment=True)
 	# 	status, solution_log = schedule_builder.build_schedule()
 	# 	print()
 	# 	pp.pprint(solution_log)
@@ -309,7 +309,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'R22' : 3}
 		student = StudentFactory.create_free_student(rating='Private', schedule_type='Rotor-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -319,7 +319,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'R44' : 2, 'RWSIM' : 1}
 		student = StudentFactory.create_free_student(rating='Instrument', schedule_type='Rotor-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -330,7 +330,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'R22' : 3}
 		student = StudentFactory.create_free_student(rating='Commercial', schedule_type='Rotor-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -340,7 +340,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'R22' : 2}
 		student = StudentFactory.create_free_student(rating='CFI', schedule_type='Rotor-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -350,7 +350,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'R44' : 1, 'RWSIM' : 1}
 		student = StudentFactory.create_free_student(rating='CFII', schedule_type='Rotor-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -360,7 +360,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'C172' : 3}
 		student = StudentFactory.create_free_student(rating='Private', schedule_type='Fixed-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -370,7 +370,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'C172' : 2, 'FWSIM' : 1}
 		student = StudentFactory.create_free_student(rating='Instrument', schedule_type='Fixed-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -393,7 +393,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		solo_instructor_placeholder.add_student(student)
 		instructors[solo_instructor_placeholder.full_name] = solo_instructor_placeholder
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -403,7 +403,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'C172' : 1}
 		student = StudentFactory.create_free_student(rating='CFI', schedule_type='Fixed-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -413,7 +413,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'C172' : 1, 'FWSIM' : 1}
 		student = StudentFactory.create_free_student(rating='CFII', schedule_type='Fixed-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -423,7 +423,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'BARON' : 3}
 		student = StudentFactory.create_free_student(rating='MEI', schedule_type='Fixed-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -433,7 +433,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		expected_aircraft = {'BARON' : 3}
 		student = StudentFactory.create_free_student(rating='ME', schedule_type='Fixed-Wing')
 		self.free_instructor.add_student(student)
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -452,7 +452,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		solo_instructor_placeholder.add_student(student)
 		instructors[solo_instructor_placeholder.full_name] = solo_instructor_placeholder
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		flight_counts = dict(Counter(solution_log['aircraft_model']))
 		self.assertEqual(expected_aircraft, flight_counts)
@@ -477,7 +477,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		instructor_student.add_student(instructor_student_student_1)
 		instructor_student.add_student(instructor_student_student_2)
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=True)
 		# print()
 		status, solution_log = schedule_builder.build_schedule()
 		# pp.pprint(solution_log)
@@ -488,13 +488,14 @@ class TestScheduleBuilder(unittest.TestCase):
 
 
 	def test_instructors_scheduled_beyond_14_hour_duty_day_infeasable(self):
+		calendar = Calendar(earliest_block=0, latest_block=24)
 		available_aircraft = {}
 		available_aircraft['C172'] = self.aircraft_factory.build_aircraft_of_model(
 										name_prefix = 'C172',
 										model = 'C172',
 										num_aircraft = 1,
-										earliest_block = 0,
-										latest_block = 24)
+										earliest_block = calendar.earliest_block,
+										latest_block = calendar.latest_block)
 
 		s1 = StudentFactory.create_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_free_one_day_at_0000_only())
 		s2 = StudentFactory.create_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_free_one_day_at_1400_only())
@@ -505,18 +506,19 @@ class TestScheduleBuilder(unittest.TestCase):
 		instructor.add_student(s2)
 
 		instructors[instructor.full_name] = instructor
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, calendar, available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
 	def test_instructors_scheduled_within_14_hour_duty_day_feasable(self):
+		calendar = Calendar(earliest_block=0, latest_block=24)
 		available_aircraft = {}
 		available_aircraft['C172'] = self.aircraft_factory.build_aircraft_of_model(
 										name_prefix = 'C172',
 										model = 'C172',
 										num_aircraft = 1,
-										earliest_block = 0,
-										latest_block = 24)
+										earliest_block = calendar.earliest_block,
+										latest_block = calendar.latest_block)
 
 		s1 = StudentFactory.create_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_free_one_day_at_0000_only())
 		s2 = StudentFactory.create_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_free_one_day_at_1200_only())
@@ -527,7 +529,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		instructor.add_student(s2)
 
 		instructors[instructor.full_name] = instructor
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, available_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, calendar, available_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.FEASIBLE)
 	    
@@ -536,7 +538,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		# s2 = StudentFactory.create_one_day_free_only_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing', unavailability=UnavailabilityFactory.get_completely_free_one_day_at_1200_only())
 		self.free_instructor.add_student(student)
 
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -546,7 +548,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		self.free_instructor.add_student(s1)
 		self.free_instructor.add_student(s2)
 
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -556,7 +558,7 @@ class TestScheduleBuilder(unittest.TestCase):
 		self.free_instructor.add_student(s1)
 		self.free_instructor.add_student(s2)
 
-		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(self.free_instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertTrue(status == cp_model.FEASIBLE or status == cp_model.OPTIMAL)
 
@@ -583,7 +585,7 @@ class TestScheduleBuilder(unittest.TestCase):
 
 		instructors[instructor.full_name] = instructor
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.INFEASIBLE)
 
@@ -607,7 +609,7 @@ class TestScheduleBuilder(unittest.TestCase):
 
 		instructors[instructor.full_name] = instructor
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar.days, self.many_aircraft, test_environment=True)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.FEASIBLE)
 
@@ -676,7 +678,7 @@ class TestScheduleBuilder(unittest.TestCase):
 	                                    latest_block = latest_block,
 	                                    soloable=False)
 
-	    schedule_builder = ScheduleBuilder(instructors, self.calendar.days, available_aircraft, test_environment=True)
+	    schedule_builder = ScheduleBuilder(instructors, self.calendar, available_aircraft, test_environment=True)
 	    status, solution_log = schedule_builder.build_schedule()
 	    self.assertEqual(len(solution_log['instructor_and_day_hour_blocks']), len(set(solution_log['instructor_and_day_hour_blocks'])))
 	    self.assertEqual(status, cp_model.FEASIBLE)
