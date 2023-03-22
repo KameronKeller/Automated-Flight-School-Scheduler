@@ -164,9 +164,44 @@ class ScheduleBuilder:
 													other_block = (day, instructor.full_name, next_student.full_name, next_aircraft.name, next_schedule_block + max_difference)
 													if current_block in self.schedule:
 														if other_block in self.schedule:
-															self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
+															# self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
+															self.model.AddInverse([self.schedule[current_block]], [self.schedule[other_block]])
 
-	# def add_flights_are_2_hours(self):
+	def add_flights_are_2_hours(self):
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for student_1 in instructor.students:
+					for student_2 in instructor.students:
+						if student_1 != student_2:
+							for aircraft_model_1 in student_1.aircraft.keys():
+								for aircraft_1 in self.available_aircraft[aircraft_model_1].values():
+									for aircraft_model_2 in student_2.aircraft.keys():
+										for aircraft_2 in self.available_aircraft[aircraft_model_2].values():
+											for schedule_block_1 in aircraft_1.schedule_blocks:
+												# for schedule_block_2 in aircraft_2.schedule_blocks:
+												current_block = (day, instructor.full_name, student_1.full_name, aircraft_1.name, schedule_block_1)
+												other_block = (day, instructor.full_name, student_2.full_name, aircraft_2.name, schedule_block_1 + 1)
+												if current_block in self.schedule and other_block in self.schedule:
+													self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
+
+
+				# for aircraft_instance in self.available_aircraft.values():
+				# 	for aircraft_1 in aircraft_instance.values():
+				# 		for aircraft_2 in aircraft_instance.values():
+				# 			if aircraft_1 != aircraft_2:
+				# 				current_block = (day, instructor.full_name, )
+				# 			model.AddImplication(schedule)
+						# self.model.Add(
+						# 	# sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
+						# 	sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] + self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block + 1)]
+						# 		for student in instructor.students
+						# 			for schedule_block in aircraft.schedule_blocks
+						# 				if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule and (day, instructor.full_name, student.full_name, aircraft.name, schedule_block + 1) in self.schedule )
+						# 					<= 1)
+
+
+
+
 
 	def add_instructors_must_have_one_day_off_per_week(self):
 		for instructor in self.instructors.values():
@@ -187,8 +222,8 @@ class ScheduleBuilder:
 		self.add_instructor_at_one_place_at_a_time_on_a_given_day()
 		self.add_instructor_student_at_one_place_at_a_time_on_a_given_day()
 		# self.add_instructors_have_max_14_hour_duty_day()
-		# self.add_flights_are_2_hours()
-		self.add_instructors_must_have_one_day_off_per_week()
+		self.add_flights_are_2_hours()
+		# self.add_instructors_must_have_one_day_off_per_week()
 
 
 	def output_schedule(self):
