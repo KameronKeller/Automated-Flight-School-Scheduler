@@ -8,9 +8,12 @@ import pprint as pp
 
 class ScheduleBuilder:
 
-	def __init__(self, instructors, days, available_aircraft, test_environment=False):
+	def __init__(self, instructors, calendar, available_aircraft, test_environment=False):
 		self.instructors = instructors
-		self.days = days
+		self.calendar = calendar
+		self.days = self.calendar.days
+		self.earliest_block = self.calendar.earliest_block
+		self.latest_block = self.calendar.latest_block
 		self.available_aircraft = available_aircraft
 		self.model = cp_model.CpModel()
 		self.schedule = {}
@@ -159,7 +162,7 @@ class ScheduleBuilder:
 		# possible_blocks = Calendar.get_possible_blocks()
 		last_possible_block = 24
 		possible_blocks = list(range(0, last_possible_block + 1))
-		max_difference = 12
+		max_difference = 14
 		for day in self.days:
 			for instructor in self.instructors.values():
 				for possible_block in possible_blocks:
@@ -171,7 +174,6 @@ class ScheduleBuilder:
 
 						for banned_block in banned_blocks:	
 							if banned_block in self.duty_day:
-								print(banned_block)
 								self.model.AddImplication(self.duty_day[current_block], self.duty_day[banned_block].Not())
 					# # other_block = (day, instructor.full_name, possible_block + max_difference)
 					# # if current_block in self.duty_day:
