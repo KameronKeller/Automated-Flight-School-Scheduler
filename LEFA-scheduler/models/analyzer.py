@@ -13,15 +13,16 @@ class Analyzer:
 	def tally_weekly_aircraft_demand(self):
 		weekly_aircraft_demand = {}
 		for instructor in self.instructors.values():
-			for student in instructor.students:
-				for aircraft_model, flight_configuration in student.aircraft.items():
-					flights_needed_counter = 0
-					for count in flight_configuration.values():
-						flights_needed_counter += count
-					if aircraft_model not in weekly_aircraft_demand:
-						weekly_aircraft_demand[aircraft_model] = flights_needed_counter
-					else:
-						weekly_aircraft_demand[aircraft_model] += flights_needed_counter
+			if not instructor.solo_placeholder:
+				for student in instructor.students:
+					for aircraft_model, flight_configuration in student.aircraft.items():
+						flights_needed_counter = 0
+						for count in flight_configuration.values():
+							flights_needed_counter += count
+						if aircraft_model not in weekly_aircraft_demand:
+							weekly_aircraft_demand[aircraft_model] = flights_needed_counter
+						else:
+							weekly_aircraft_demand[aircraft_model] += flights_needed_counter
 		return weekly_aircraft_demand
 
 	def tally_weekly_aircraft_availability(self):
@@ -47,7 +48,7 @@ class Analyzer:
 				demand = weekly_aircraft_demand[aircraft_model]
 				difference = available - demand
 				if difference < 0:
-					print('Too few {} available'.format(aircraft_model))
+					print('--- Too few {} available ---'.format(aircraft_model))
 				print('{} available: {}, demand: {}, difference: {}'.format(aircraft_model, available, demand, difference))
 
 
