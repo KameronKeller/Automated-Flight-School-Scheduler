@@ -4,6 +4,7 @@ from models.profile_builder import ProfileBuilder
 from models.schedule_builder import ScheduleBuilder
 from models.calendar import Calendar
 from models.aircraft_factory import AircraftFactory
+from models.analyzer import Analyzer
 import csv
 import sys
 import pprint
@@ -21,13 +22,15 @@ def main():
 
     available_aircraft = {}
     aircraft_factory = AircraftFactory()
-    # earliest_block = 7
-    # latest_block = 17
-    earliest_block = 0
-    latest_block = 24
+    calendar = Calendar(earliest_block=7, latest_block=17)
+    earliest_block = calendar.earliest_block
+    latest_block = calendar.latest_block
+    # earliest_block = 0
+    # latest_block = 24
     available_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'R22',
                                     model = 'R22',
+                                    # num_aircraft = 10,
                                     num_aircraft = 6,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block)
@@ -35,6 +38,7 @@ def main():
     available_aircraft['R44'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'R44',
                                     model = 'R44',
+                                    # num_aircraft = 6,
                                     num_aircraft = 3,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block)
@@ -42,6 +46,7 @@ def main():
     available_aircraft['RWSIM'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'RWSIM',
                                     model = 'RWSIM',
+                                    # num_aircraft = 3,
                                     num_aircraft = 1,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block,
@@ -50,6 +55,7 @@ def main():
     available_aircraft['C172'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'C172',
                                     model = 'C172',
+                                    # num_aircraft = 15,
                                     num_aircraft = 11,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block)
@@ -57,6 +63,7 @@ def main():
     available_aircraft['BARON'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'BARON',
                                     model = 'BARON',
+                                    # num_aircraft = 3,
                                     num_aircraft = 1,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block)
@@ -64,12 +71,17 @@ def main():
     available_aircraft['FWSIM'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'FWSIM',
                                     model = 'FWSIM',
+                                    # num_aircraft = 3,
                                     num_aircraft = 1,
                                     earliest_block = earliest_block,
                                     latest_block = latest_block,
                                     soloable=False)
 
-    schedule_builder = ScheduleBuilder(instructors, Calendar.get_days(), available_aircraft)
+    feasability_analyzer = Analyzer(instructors, calendar, available_aircraft)
+    feasability_analyzer.check_for_sufficient_aircraft()
+    feasability_analyzer.check_student_availability()
+
+    schedule_builder = ScheduleBuilder(instructors, calendar, available_aircraft)
     status, solution_log = schedule_builder.build_schedule()
     print(status)
 
