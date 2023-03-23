@@ -613,6 +613,36 @@ class TestScheduleBuilder(unittest.TestCase):
 		status, solution_log = schedule_builder.build_schedule()
 		self.assertEqual(status, cp_model.FEASIBLE)
 
+	def test_if_an_instructor_works_6_hours_gets_break(self):
+		s1 = StudentFactory.create_free_student(first_name='s1', rating='CFI', schedule_type='Fixed-Wing')
+		s2 = StudentFactory.create_free_student(first_name='s2', rating='CFI', schedule_type='Fixed-Wing')
+		s3 = StudentFactory.create_free_student(first_name='s3', rating='CFI', schedule_type='Fixed-Wing')
+		s4 = StudentFactory.create_free_student(first_name='s4', rating='CFI', schedule_type='Fixed-Wing')
+
+		instructors = {}
+		instructor = InstructorFactory.create_instructor(unavailability=UnavailabilityFactory.get_free_10_hours_one_day_only())
+		instructor.add_student(s1)
+		instructor.add_student(s2)
+		instructor.add_student(s3)
+		instructor.add_student(s4)
+
+		instructors[instructor.full_name] = instructor
+
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=False)
+		status, solution_log = schedule_builder.build_schedule()
+		print(status)
+		pp.pprint(solution_log)
+		scheduled_blocks = sorted(solution_log['blocks'])
+		consecutive_block_counter = 1 # the first block is automatically "consecutive""
+		for current in range(0, len(scheduled_blocks)):
+			next = current + 1
+			if next < len(scheduled_blocks):
+				difference = scheduled_blocks[next] - scheduled_blocks[current]
+				if difference == 2:
+					consecutive_block_counter += 1
+		self.assertTrue(consecutive_block_counter <= 3) # must be less than 3 because 3 flights * 2 hours = 6 consecutive hours
+
+
 
 
 	# def test_if_available_schedule_pvt_students_4x_week(self):
@@ -620,8 +650,6 @@ class TestScheduleBuilder(unittest.TestCase):
 
 	# def test_if_available_schedule_commercial_students_4x_week(self):
 	#     assert False
-
-	# def test student availability (if they are only available at 8am, they can't be scheduled for 7-9)
 
 
 	def test_end_to_end_instructor_in_one_place_at_time(self):
