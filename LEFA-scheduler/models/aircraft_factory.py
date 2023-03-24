@@ -3,7 +3,7 @@ from models.aircraft import Aircraft
 
 class AircraftFactory:
 
-	def build_aircraft_of_model(self, name_prefix, model, num_aircraft, earliest_block, latest_block):
+	def build_aircraft_of_model(self, name_prefix, model, num_aircraft, earliest_block, latest_block, soloable=True):
 		available_aircraft = {}
 
 		later_start_time = earliest_block + 1
@@ -23,7 +23,7 @@ class AircraftFactory:
 				block_type = self.calculate_even_or_odd(later_start_time)
 				schedule_blocks = self.calculate_blocks(later_start_time, earlier_finish_time)
 
-			aircraft = Aircraft(aircraft_name, model, block_type, schedule_blocks)
+			aircraft = Aircraft(aircraft_name, model, block_type, schedule_blocks, soloable)
 			available_aircraft[aircraft_name] = aircraft
 
 		return available_aircraft
