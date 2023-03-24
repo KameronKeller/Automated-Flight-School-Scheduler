@@ -66,6 +66,10 @@ class Analyzer:
 				# print(flights_needed_counter)
 				available_blocks_counter = 0
 				available_days_counter = 0
+				
+				combined_blocks_counter = 0
+				combined_days_counter = 0
+				
 				for day, unavailability in student.unavailability.items():
 					availability_difference = possible_blocks.difference(unavailability)
 					if len(availability_difference) > 1: # if student has a block available:
@@ -75,17 +79,31 @@ class Analyzer:
 						if hour and next_hour in availability_difference:
 							available_blocks_counter += 1
 
+					combined_unavailability = instructor.unavailability[day].union(unavailability)
+					combined_availability_difference = possible_blocks.difference(combined_unavailability)
+
+					if len(combined_availability_difference) > 1: # if student/instructor has a block available:
+						combined_days_counter += 1
+					for hour in combined_availability_difference:
+						next_hour = hour + 1
+						if hour and next_hour in availability_difference:
+							combined_blocks_counter += 1
+
 				days_difference = available_days_counter - flights_needed_counter
 				blocks_difference = available_blocks_counter - flights_needed_counter
+
+				combined_days_difference = combined_days_counter - flights_needed_counter
+				combined_blocks_difference = combined_blocks_counter - flights_needed_counter
 
 				if days_difference < 0:
 					print('{} does not have enough days available. Needs {}, has {}'.format(student.full_name, flights_needed_counter, available_days_counter))
 				if blocks_difference < 0:
 					print('{} does not have enough blocks available. Needs {}, has {}'.format(student.full_name, flights_needed_counter, available_blocks_counter))
 
-
-
-
+				if combined_days_difference < 0:
+					print('{} and {} combined do not have enough days available. Needs {}, has {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_days_counter))
+				if combined_blocks_difference < 0:
+					print('{} and {} combined do not have enough blocks available. Needs {}, has {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_blocks_counter))
 
 
 
