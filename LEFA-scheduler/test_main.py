@@ -27,7 +27,7 @@ def main():
     'fixedwing_tuesday_unavailability': '06:30;05:30;',
     'fixedwing_wednesday_unavailability': '05:30;06:30;'}
     person = Person('first', 'last', unavailability)
-    pp.pprint(person.unavailability)
+    # pp.pprint(person.unavailability)
 
     # pp.pprint(instructors)
     # for student in instructors['Jason Axt'].students:
