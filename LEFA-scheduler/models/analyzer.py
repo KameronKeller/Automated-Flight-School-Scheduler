@@ -102,6 +102,7 @@ class Analyzer:
 						if hour and next_hour in availability_difference:
 							available_blocks_counter += 1
 
+					# Prints the availability ratio for each student
 					# print('{:.2f}: {} {}'.format(len(availability_difference)/len(possible_blocks), day, student.full_name))
 
 					combined_unavailability = instructor.unavailability[day].union(unavailability)
