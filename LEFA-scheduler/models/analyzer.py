@@ -6,11 +6,21 @@ from models.calendar import Calendar
 class Analyzer:
 
 	def __init__(self, instructors, calendar, available_aircraft):
+		"""
+		:param instructors: A dictionary of instructors, key is instructor name, value is Instructor object
+		:param calendar: A Calendar object
+		:param available_aircraft: A dictionary of aircraft, key is aircraft name, value is Aircraft object
+		"""
 		self.instructors = instructors
 		self.calendar = calendar
 		self.available_aircraft = available_aircraft
 
 	def tally_weekly_aircraft_demand(self):
+		"""
+		Iters through all the instructors and students and tallies the number of flights needed for each aircraft model.
+		Excludes solo placeholder instructors.
+		Returns a dictionary of aircraft models and the number of flights needed for each model.
+		"""
 		weekly_aircraft_demand = {}
 		for instructor in self.instructors.values():
 			if not instructor.solo_placeholder:
@@ -26,6 +36,10 @@ class Analyzer:
 		return weekly_aircraft_demand
 
 	def tally_weekly_aircraft_availability(self):
+		"""
+		Iters through all the aircraft and tallies the number of flights available for each aircraft model per week.
+		Returns a dictionary of aircraft models and the number of flights available for each model.
+		"""
 		weekly_aircraft_availability = {}
 		for aircraft_model, aircraft_instance in self.available_aircraft.items():
 			flights_available_counter = 0
@@ -39,6 +53,10 @@ class Analyzer:
 		return weekly_aircraft_availability
 
 	def check_for_sufficient_aircraft(self):
+		"""
+		Compares the number of flights needed for each aircraft model to the number of flights available for each aircraft model.
+		Output is printed to the console.
+		"""
 		weekly_aircraft_demand = self.tally_weekly_aircraft_demand()
 		weekly_aircraft_availability = self.tally_weekly_aircraft_availability()
 
@@ -54,6 +72,10 @@ class Analyzer:
 
 
 	def check_student_availability(self):
+		"""
+		Checks the availability of each student against their needs.
+		Output is printed to the console.
+		"""
 		# get the flights needed, blocks needed, and compare to availability
 		max_blocks_per_day = self.calendar.get_max_num_blocks_per_day()
 		possible_blocks = self.calendar.get_possible_blocks()
@@ -70,6 +92,7 @@ class Analyzer:
 				combined_blocks_counter = 0
 				combined_days_counter = 0
 				
+				# Check if student has a block available
 				for day, unavailability in student.unavailability.items():
 					availability_difference = possible_blocks.difference(unavailability)
 					if len(availability_difference) > 1: # if student has a block available:
@@ -79,9 +102,12 @@ class Analyzer:
 						if hour and next_hour in availability_difference:
 							available_blocks_counter += 1
 
+					# print('{:.2f}: {} {}'.format(len(availability_difference)/len(possible_blocks), day, student.full_name))
+
 					combined_unavailability = instructor.unavailability[day].union(unavailability)
 					combined_availability_difference = possible_blocks.difference(combined_unavailability)
 
+					# Check if student/instructor has a block available
 					if len(combined_availability_difference) > 1: # if student/instructor has a block available:
 						combined_days_counter += 1
 					for hour in combined_availability_difference:
@@ -104,6 +130,7 @@ class Analyzer:
 					print('{} and {} combined do not have enough days available. Needs {}, has {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_days_counter))
 				if combined_blocks_difference < 0:
 					print('{} and {} combined do not have enough blocks available. Needs {}, has {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_blocks_counter))
+
 
 
 

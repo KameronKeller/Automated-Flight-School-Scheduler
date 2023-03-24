@@ -42,7 +42,8 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 							for schedule_block in aircraft.schedule_blocks:
 								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self._schedule: # if the block is in the schedule
 									if self.Value(self._schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]): # if the value is true (valid solution)
-
+										
+										# Log the solution
 										self.solution_log['days'].append(day)
 										self.solution_log['instructors'].append(instructor.full_name)
 										self.solution_log['students'].append(student.full_name)
@@ -54,6 +55,7 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 										self.solution_log['individual_day_hour_block'].append(instructor.full_name + '_' + day + '_' + str(schedule_block))
 										self.solution_log['individual_day_hour_block'].append(student.full_name + '_' + day + '_' + str(schedule_block))
 
+										# Print the solution if not in test environment
 										if not self.test_environment:
 											print('{},{},{},{},{}'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
 		if self._solution_count >= self._solution_limit:
@@ -64,4 +66,7 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 
 	def solution_count(self):
+		"""
+		Returns the number of solutions found.
+		"""
 		return self._solution_count

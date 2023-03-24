@@ -6,8 +6,17 @@ from models.student import Student
 from models.instructor_student import InstructorStudent
 
 class ProfileBuilder:
+	"""
+	Builds instructor and student profiles from a CSV file.
+	"""
 
 	def __init__(self, csv_path, test_environment=True):
+		"""
+		:param csv_path: The path to the CSV file, string
+		:param test_environment: Whether the program is running in a test environment, boolean
+		
+		required_fieldnames are the expected columns in the CSV file:
+		"""
 		self.csv_path = csv_path
 		self.test_environment = test_environment
 		self.required_fieldnames = {
@@ -38,7 +47,16 @@ class ProfileBuilder:
 		}
 
 	def build_instructor_profiles(self):
+		"""
+		Builds instructor profiles from the parsed CSV file.
+		Students are added to the instructor's list of students.
+		Returns two dictionaries of instructors, one for rotor-wing and one for fixed-wing with the instructor's full name as the key.
+		"""
+
+		# Establish and id to ensure no duplicate solo placeholders are created
 		solo_flight_id = 0
+
+		# Solo instructors are completely available
 		solo_instructor_unavailability = {
 				'Sunday': '',
 				'Monday': '',
@@ -49,12 +67,14 @@ class ProfileBuilder:
 				'Saturday': ''}
 
 
-
+		# Get a list of all profiles frm the CSV file
 		profiles = self.create_profiles()
 		instructors = None
 		fw_instructors = {}
 		rw_instructors = {}
 		students = set()
+
+		# First pass, create the instructors and keep track of students for second pass
 		for profile in profiles:
 			full_name = profile['full_name']
 			if profile['instructor'] == "I am an instructor":
@@ -69,6 +89,8 @@ class ProfileBuilder:
 			else:
 				students.add(profile['full_name']) # keep track of students for second pass
 
+		# Second pass, create the students and add them to the instructor's list of students.
+		# Also create instructor-student profiles for instructors who are also students.
 		for profile in profiles:
 			profile_type = profile['schedule_type']
 			if profile_type == 'Rotor-Wing':
@@ -85,6 +107,7 @@ class ProfileBuilder:
 					unavailability = profile['fixedwing_unavailability']
 					instructors = fw_instructors
 
+				# If the profile is in the instructors dict and the students set, create an instructor-student profile
 				if profile['full_name'] in instructors and profile['full_name'] in students:
 					instructor_student = InstructorStudent(profile['first_name'], profile['last_name'], unavailability, profile['current_rating'], profile_type, instructors[instructor_name], instructors[profile['full_name']].students)
 
@@ -104,6 +127,7 @@ class ProfileBuilder:
 
 
 					instructors[instructor_name].add_student(student)
+			# If the student doesn't have an instructor, print a message
 			else:
 				if instructor_name != "I am an instructor":
 					name = profile['full_name']
@@ -113,6 +137,10 @@ class ProfileBuilder:
 		return fw_instructors, rw_instructors
 
 	def create_profiles(self):
+		"""
+		Creates a list of profiles from the CSV file.
+		Returns a list of dictionaries that contain the profile information.
+		"""
 		profiles = []
 		people = {}
 		# Note: encoding is required to handle special characters.
@@ -121,17 +149,19 @@ class ProfileBuilder:
 			csv_reader = csv.DictReader(csv_file)
 			# headers = next(csv_reader)
 
+			# Verify the headers are correct
 			self.verify_fieldnames(csv_reader.fieldnames)
 
 			for row in csv_reader:
-				# print(row)
-
+				
+				# Clean the names to help identify duplicates
 				first_name = row['What is your first name?']
 				last_name = row['What is your last name?']
 				first_name = first_name.strip()
 				last_name = last_name.strip()
 				full_name = first_name + ' ' + last_name
 
+				# Create a profile for each person
 				profile = {
 					# may not need submission_id, but adding just-in-case
 					'submission_id' : row['ID'],
@@ -165,6 +195,8 @@ class ProfileBuilder:
 						'fixedwing_time_off_explaination' : row['Explanation of Time Off2']
 				}
 
+				# If not in test environment, check for duplicates and print them
+				# Also check for similar names to help identify duplicates with typo's
 				if not self.test_environment:
 					name = profile['full_name']
 					if name != ' ':
@@ -188,10 +220,16 @@ class ProfileBuilder:
 		return profiles
 
 	def verify_fieldnames(self, fieldnames):
+		"""
+		Verifies that the CSV file contains the required fieldnames.
+		"""
 		for required_fieldname in self.required_fieldnames:
 			if required_fieldname not in fieldnames:
 				raise KeyError('CSV file must contain required fieldnames')
 
 	def similar(self, a, b):
+		"""
+		Use SequenceMatcher to calculate the similarity of two strings.
+		"""
 		return SequenceMatcher(None, a, b).ratio()
 

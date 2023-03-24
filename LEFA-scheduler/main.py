@@ -26,8 +26,7 @@ def main():
     calendar = Calendar(earliest_block=7, latest_block=17)
     earliest_block = calendar.earliest_block
     latest_block = calendar.latest_block
-    # earliest_block = 0
-    # latest_block = 24
+
     available_rw_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'R22',
                                     model = 'R22',
@@ -104,10 +103,14 @@ def main():
                         print("\t\tRemoving {} resulted in {}".format(removed_student.full_name, removed_status))
                     instructor.students.insert(i, removed_student)
 
+        # If all instructors are feasible, build the schedule
         if 3 not in result_set and 0 not in result_set:
             print("\n======= {} Schedule =======".format(title))
             schedule_builder = ScheduleBuilder(instructors, calendar, available_aircraft, time_limit=60*60*2)
             status, solution_log = schedule_builder.build_schedule()
+
+
+
             # print(status)
             # if status == 3 or status == 0:
             #     print("\t----- Testing Individual Instructors -----")

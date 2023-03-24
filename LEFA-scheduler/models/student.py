@@ -10,6 +10,11 @@ class Student(Person):
 		self.aircraft = self.determine_aircraft(self.rating, self.schedule_type)
 
 	def determine_aircraft(self, rating, schedule_type):
+		"""
+		Determines the aircraft that the student can fly based on their rating and schedule type.
+		:param rating: The rating of the student, string
+		:param schedule_type: The schedule type of the student, string
+		"""
 		type_and_rating = rating + ' ' + schedule_type
 		match type_and_rating:
 			case 'Private Rotor-Wing':
