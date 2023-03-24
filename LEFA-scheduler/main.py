@@ -111,30 +111,6 @@ def main():
 
 
 
-            # print(status)
-            # if status == 3 or status == 0:
-            #     print("\t----- Testing Individual Instructors -----")
-            #     for instructor_name, instructor in fw_instructors.items():
-            #         test_instructors = {instructor_name : instructor}
-            #         instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_fw_aircraft, time_limit=60, test_environment=True)
-            #         instructor_status, solution_log = instructor_schedule_builder.build_schedule()
-            #         num_students = len(instructor.students)
-            #         if instructor_status == 3 or instructor_status == 0:
-            #             print("\tTesting: {}, result: {}".format(instructor_name, instructor_status))
-            #             for i in range(num_students):
-            #                 removed_student = instructor.students.pop(i)
-            #                 removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_fw_aircraft, time_limit=20, test_environment=True)
-            #                 removed_status, _ = removed_student_schedule_builder.build_schedule()
-            #                 if removed_status == 2 or removed_status == 4:
-            #                     print("\t\tRemoving {} resulted in {}".format(removed_student.full_name, removed_status))
-            #                 instructor.students.insert(i, removed_student)
-
-
-
-
-
-
-
 
     # print("\n======= FW Feasability =======")
     # feasability_analyzer = Analyzer(fw_instructors, calendar, available_fw_aircraft)
@@ -147,61 +123,6 @@ def main():
     # feasability_analyzer.check_for_sufficient_aircraft()
     # print("--- Student Conflicts ---")
     # feasability_analyzer.check_student_availability()
-
-    # print("\n======= RW Schedule =======")
-    # schedule_builder = ScheduleBuilder(rw_instructors, calendar, available_rw_aircraft)
-    # status, solution_log = schedule_builder.build_schedule()
-    # print(status)
-    # if status == 3:
-    #     print("\t----- Testing Individual Instructors -----")
-    #     for instructor_name, instructor in rw_instructors.items():
-    #         test_instructors = {instructor_name : instructor}
-    #         instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_rw_aircraft, time_limit=60, test_environment=True)
-    #         instructor_status, solution_log = instructor_schedule_builder.build_schedule()
-    #         # for student in instructor.students:
-    #         #     print(student.full_name)
-    #         if instructor_status == 3:
-    #             print("\tTesting: {}, result: {}".format(instructor_name, instructor_status))
-    #         #     print("test_this_one")
-
-    # print("\n======= FW Schedule =======")
-    # schedule_builder = ScheduleBuilder(fw_instructors, calendar, available_fw_aircraft, time_limit=60*60*2)
-    # status, solution_log = schedule_builder.build_schedule()
-    # print(status)
-    # if status == 3 or status == 0:
-    #     print("\t----- Testing Individual Instructors -----")
-    #     for instructor_name, instructor in fw_instructors.items():
-    #         test_instructors = {instructor_name : instructor}
-    #         instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_fw_aircraft, time_limit=60, test_environment=True)
-    #         instructor_status, solution_log = instructor_schedule_builder.build_schedule()
-    #         num_students = len(instructor.students)
-    #         if instructor_status == 3 or instructor_status == 0:
-    #             print("\tTesting: {}, result: {}".format(instructor_name, instructor_status))
-    #             for i in range(num_students):
-    #                 removed_student = instructor.students.pop(i)
-    #                 removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_fw_aircraft, time_limit=20, test_environment=True)
-    #                 removed_status, _ = removed_student_schedule_builder.build_schedule()
-    #                 if removed_status == 2 or removed_status == 4:
-    #                     print("\t\tRemoving {} resulted in {}".format(removed_student.full_name, removed_status))
-    #                 instructor.students.insert(i, removed_student)
-                #     print(student.full_name)
-            #     print("test_this_one")
-
-
-
-
-                # original_students = copy.deepcopy(instructor.students)
-                # for i in range(len(original_students)):
-                #     students = copy.deepcopy(original_students)
-                #     print('len(original_students)')
-                #     print(len(original_students))
-                #     removed_student = students.pop(i)
-                #     instructor.students = students
-                #     schedule_builder = ScheduleBuilder(test_instructors, calendar, available_rw_aircraft, test_environment=True)
-                #     status, solution_log = schedule_builder.build_schedule()
-
-                #     print("\t\tRemoved: {}, result: {}".format(removed_student.full_name, status))
-            # print(instructor.students)
 
     # print("\n======= FW Schedule =======")
     # schedule_builder = ScheduleBuilder(fw_instructors, calendar, available_fw_aircraft)
