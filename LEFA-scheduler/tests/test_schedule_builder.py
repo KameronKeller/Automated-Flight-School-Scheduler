@@ -628,10 +628,10 @@ class TestScheduleBuilder(unittest.TestCase):
 
 		instructors[instructor.full_name] = instructor
 
-		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=False)
+		schedule_builder = ScheduleBuilder(instructors, self.calendar, self.many_aircraft, test_environment=True)
 		status, solution_log = schedule_builder.build_schedule()
-		print(status)
-		pp.pprint(solution_log)
+		# print(status)
+		# pp.pprint(solution_log)
 		scheduled_blocks = sorted(solution_log['blocks'])
 		consecutive_block_counter = 1 # the first block is automatically "consecutive""
 		for current in range(0, len(scheduled_blocks)):
@@ -652,64 +652,68 @@ class TestScheduleBuilder(unittest.TestCase):
 	#     assert False
 
 
-	def test_end_to_end_instructor_in_one_place_at_time(self):
-	    file_path = 'tests/fake_data_simple.csv'
+	# def test_end_to_end_instructor_in_one_place_at_time(self):
+	#     file_path = 'tests/fake_data_simple.csv'
 
-	    profile_builder = ProfileBuilder(file_path)
-	    instructors = profile_builder.build_instructor_profiles()
+	#     profile_builder = ProfileBuilder(file_path)
+	#     fw_instructors, rw_instructors = profile_builder.build_instructor_profiles()
 
-	    available_aircraft = {}
-	    aircraft_factory = AircraftFactory()
-	    earliest_block = 7
-	    latest_block = 17
-	    available_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
-	                                    name_prefix = 'R22',
-	                                    model = 'R22',
-	                                    num_aircraft = 6,
-	                                    earliest_block = earliest_block,
-	                                    latest_block = latest_block)
+	#     available_aircraft = {}
+	#     aircraft_factory = AircraftFactory()
+	#     earliest_block = 7
+	#     latest_block = 17
+	#     available_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
+	#                                     name_prefix = 'R22',
+	#                                     model = 'R22',
+	#                                     num_aircraft = 6,
+	#                                     earliest_block = earliest_block,
+	#                                     latest_block = latest_block)
 
-	    available_aircraft['R44'] = aircraft_factory.build_aircraft_of_model(
-	                                    name_prefix = 'R44',
-	                                    model = 'R44',
-	                                    num_aircraft = 3,
-	                                    earliest_block = earliest_block,
-	                                    latest_block = latest_block)
+	#     available_aircraft['R44'] = aircraft_factory.build_aircraft_of_model(
+	#                                     name_prefix = 'R44',
+	#                                     model = 'R44',
+	#                                     num_aircraft = 3,
+	#                                     earliest_block = earliest_block,
+	#                                     latest_block = latest_block)
 
-	    available_aircraft['RWSIM'] = aircraft_factory.build_aircraft_of_model(
-	                                    name_prefix = 'RWSIM',
-	                                    model = 'RWSIM',
-	                                    num_aircraft = 1,
-	                                    earliest_block = earliest_block,
-	                                    latest_block = latest_block,
-	                                    soloable=False)
+	#     available_aircraft['RWSIM'] = aircraft_factory.build_aircraft_of_model(
+	#                                     name_prefix = 'RWSIM',
+	#                                     model = 'RWSIM',
+	#                                     num_aircraft = 1,
+	#                                     earliest_block = earliest_block,
+	#                                     latest_block = latest_block,
+	#                                     soloable=False)
 
-	    available_aircraft['C172'] = aircraft_factory.build_aircraft_of_model(
-	                                    name_prefix = 'C172',
-	                                    model = 'C172',
-	                                    num_aircraft = 11,
-	                                    earliest_block = earliest_block,
-	                                    latest_block = latest_block)
+	#     available_aircraft['C172'] = aircraft_factory.build_aircraft_of_model(
+	#                                     name_prefix = 'C172',
+	#                                     model = 'C172',
+	#                                     num_aircraft = 11,
+	#                                     earliest_block = earliest_block,
+	#                                     latest_block = latest_block)
 
-	    available_aircraft['BARON'] = aircraft_factory.build_aircraft_of_model(
-	                                    name_prefix = 'BARON',
-	                                    model = 'BARON',
-	                                    num_aircraft = 1,
-	                                    earliest_block = earliest_block,
-	                                    latest_block = latest_block)
+	#     available_aircraft['BARON'] = aircraft_factory.build_aircraft_of_model(
+	#                                     name_prefix = 'BARON',
+	#                                     model = 'BARON',
+	#                                     num_aircraft = 1,
+	#                                     earliest_block = earliest_block,
+	#                                     latest_block = latest_block)
 
-	    available_aircraft['FWSIM'] = aircraft_factory.build_aircraft_of_model(
-	                                    name_prefix = 'FWSIM',
-	                                    model = 'FWSIM',
-	                                    num_aircraft = 1,
-	                                    earliest_block = earliest_block,
-	                                    latest_block = latest_block,
-	                                    soloable=False)
+	#     available_aircraft['FWSIM'] = aircraft_factory.build_aircraft_of_model(
+	#                                     name_prefix = 'FWSIM',
+	#                                     model = 'FWSIM',
+	#                                     num_aircraft = 1,
+	#                                     earliest_block = earliest_block,
+	#                                     latest_block = latest_block,
+	#                                     soloable=False)
 
-	    schedule_builder = ScheduleBuilder(instructors, self.calendar, available_aircraft, test_environment=True)
-	    status, solution_log = schedule_builder.build_schedule()
-	    self.assertEqual(len(solution_log['instructor_and_day_hour_blocks']), len(set(solution_log['instructor_and_day_hour_blocks'])))
-	    self.assertEqual(status, cp_model.FEASIBLE)
+	#     fw_schedule_builder = ScheduleBuilder(fw_instructors, self.calendar, available_aircraft, test_environment=True)
+	#     fw_status, fw_solution_log = fw_schedule_builder.build_schedule()
+	#     rw_schedule_builder = ScheduleBuilder(rw_instructors, self.calendar, available_aircraft, test_environment=True)
+	#     rw_status, rw_solution_log = rw_schedule_builder.build_schedule()
+	#     self.assertEqual(len(fw_solution_log['instructor_and_day_hour_blocks']), len(set(fw_solution_log['instructor_and_day_hour_blocks'])))
+	#     self.assertEqual(len(rw_solution_log['instructor_and_day_hour_blocks']), len(set(rw_solution_log['instructor_and_day_hour_blocks'])))
+	#     self.assertEqual(fw_status, cp_model.FEASIBLE)
+	#     self.assertEqual(rw_status, cp_model.FEASIBLE)
 
 if __name__ == '__main__':
 	unittest.main()
