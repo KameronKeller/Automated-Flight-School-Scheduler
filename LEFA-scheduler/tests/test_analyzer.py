@@ -71,8 +71,19 @@ class TestAnalyzer(unittest.TestCase):
 		self.instructors[self.instructor.full_name] = self.instructor
 		self.analyzer = Analyzer(self.instructors, self.calendar, self.available_aircraft)
 
-	# def test_calculates_num_aircraft_needed(self):
-	# 	self.analyzer.check_for_sufficient_aircraft()
+	def test_tally_weekly_aircraft_demand(self):
+		instructor = InstructorFactory.create_free_instructor()
+		s1 = StudentFactory.create_student(first_name='s1', rating='Commercial', schedule_type='Fixed-Wing')
+		s2 = StudentFactory.create_student(first_name='s2', rating='Instrument', schedule_type='Fixed-Wing')
+		s3 = StudentFactory.create_student(first_name='s3', last_name='', rating='CFII', schedule_type='Fixed-Wing')
+		instructor.add_student(s1)
+		instructor.add_student(s2)
+		instructor.add_student(s3)
+		instructors = {instructor.full_name : instructor}
+		analyzer = Analyzer(instructors, self.calendar, self.available_aircraft)
+		weekly_aircraft_demand = analyzer.tally_weekly_aircraft_demand()
+		expected = {'C172': 6, 'FWSIM': 3}
+		self.assertEqual(expected, weekly_aircraft_demand)
 
 	# def test_if_students_have_enough_availability_self(self):
 	# 	self.analyzer.check_student_availability()
