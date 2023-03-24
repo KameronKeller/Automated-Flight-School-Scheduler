@@ -8,7 +8,7 @@ import pprint as pp
 
 class ScheduleBuilder:
 
-	def __init__(self, instructors, calendar, available_aircraft, test_environment=False):
+	def __init__(self, instructors, calendar, available_aircraft, time_limit=False, test_environment=False):
 		self.instructors = instructors
 		self.calendar = calendar
 		self.days = self.calendar.days
@@ -21,6 +21,7 @@ class ScheduleBuilder:
 		self.duty_day = {}
 		self.test_environment = test_environment
 		self.all_aircraft_names = self.get_all_aircraft_names()
+		self.time_limit = time_limit
 
 	def get_all_aircraft_names(self):
 		all_aircraft_names = []
@@ -111,14 +112,15 @@ class ScheduleBuilder:
 	def add_one_block_hold_one_student(self):
 		# Each aircraft can only hold one student per block, per day
 		for day in self.days:
-			for instructor in self.instructors.values():
+			# for instructor in self.instructors.values():
 				for aircraft_type in self.available_aircraft.values():
 					for aircraft_name, aircraft in aircraft_type.items():
 						for schedule_block in aircraft.schedule_blocks:
 							self.model.AddAtMostOne(
 								self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
-									for student in instructor.students
-										if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
+									for instructor in self.instructors.values()
+										for student in instructor.students
+											if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule)
 
 	def add_instructor_at_one_place_at_a_time_on_a_given_day(self):
 		for day in self.days:
@@ -481,6 +483,8 @@ class ScheduleBuilder:
 		solver = cp_model.CpSolver()
 		solver.parameters.linearization_level = 0
 		solver.parameters.enumerate_all_solutions = True
+		if self.time_limit:
+			solver.parameters.max_time_in_seconds = self.time_limit
 		solution_printer = SolutionPrinter(self.instructors, self.days, self.available_aircraft, self.schedule, 1, self.test_environment)
 		status = solver.Solve(self.model, solution_printer)
 		# print('\nStatistics')
@@ -494,9 +498,9 @@ class ScheduleBuilder:
 
 	def build_schedule(self):
 		self.generate_model()
-		print('generating model complete')
+		# print('generating model complete')
 		self.add_constraints()
-		print('adding constraints complete')
+		# print('adding constraints complete')
 		return self.output_schedule()
 
 
