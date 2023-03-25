@@ -34,9 +34,9 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 		# 	'blocks' : set(),
 		# 	'day_and_hour_blocks' : set()
 		# }
-		header = 'schedule_type,day,instructor,student,aircraft,schedule_block'
-		with open('solution_{}.csv'.format(self.solution_count()), mode='w') as file:
-			file.write(header)
+		# header = 'schedule_type,day,instructor,student,aircraft,schedule_block\n'
+		with open('solution_{}.csv'.format(self.solution_count()), mode='a') as file:
+			# file.write(header)
 			self._solution_count += 1
 			for day in self._days:
 				for instructor in self._instructors.values():
@@ -63,7 +63,7 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 											# Print the solution if not in test environment
 											if not self.test_environment:
-												file.write('{},{},{},{},{}\n'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
+												file.write('{},{},{},{},{},{}\n'.format(student.schedule_type, day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
 												print('{},{},{},{},{}'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
 			if self._solution_count >= self._solution_limit:
 				if not self.test_environment:
