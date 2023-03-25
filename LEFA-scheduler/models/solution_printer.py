@@ -23,6 +23,7 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 			'instructor_and_day_hour_blocks' : [],
 			'individual_day_hour_block' : []
 		}
+		self.solution_keys = set()
 
 	def on_solution_callback(self):
 		# solution_log = { # solution log for testing
@@ -33,35 +34,41 @@ class SolutionPrinter(cp_model.CpSolverSolutionCallback):
 		# 	'blocks' : set(),
 		# 	'day_and_hour_blocks' : set()
 		# }
-		self._solution_count += 1
-		for day in self._days:
-			for instructor in self._instructors.values():
-				for student in instructor.students:
-					for aircraft_model, flight_configuration in student.aircraft.items():
-						for aircraft in self._available_aircraft[aircraft_model].values():
-							for schedule_block in aircraft.schedule_blocks:
-								if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self._schedule: # if the block is in the schedule
-									if self.Value(self._schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]): # if the value is true (valid solution)
-										
-										# Log the solution
-										self.solution_log['days'].append(day)
-										self.solution_log['instructors'].append(instructor.full_name)
-										self.solution_log['students'].append(student.full_name)
-										self.solution_log['aircraft'].append(aircraft.name)
-										self.solution_log['aircraft_model'].append(aircraft_model)
-										self.solution_log['blocks'].append(schedule_block)
-										self.solution_log['day_and_hour_blocks'].append(day + '_' + str(schedule_block))
-										self.solution_log['instructor_and_day_hour_blocks'].append(instructor.full_name + '_' + day + '_' + str(schedule_block))
-										self.solution_log['individual_day_hour_block'].append(instructor.full_name + '_' + day + '_' + str(schedule_block))
-										self.solution_log['individual_day_hour_block'].append(student.full_name + '_' + day + '_' + str(schedule_block))
+		header = 'schedule_type,day,instructor,student,aircraft,schedule_block'
+		with open('solution_{}.csv'.format(self.solution_count()), mode='w') as file:
+			file.write(header)
+			self._solution_count += 1
+			for day in self._days:
+				for instructor in self._instructors.values():
+					for student in instructor.students:
+						for aircraft_model, flight_configuration in student.aircraft.items():
+							for aircraft in self._available_aircraft[aircraft_model].values():
+								for schedule_block in aircraft.schedule_blocks:
+									if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self._schedule: # if the block is in the schedule
+										if self.Value(self._schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]): # if the value is true (valid solution)
 
-										# Print the solution if not in test environment
-										if not self.test_environment:
-											print('{},{},{},{},{}'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
-		if self._solution_count >= self._solution_limit:
-			if not self.test_environment:
-				print('Stop search after %i solutions' % self._solution_limit)
-			self.StopSearch()
+											self.solution_keys.add((day, aircraft.name, schedule_block))
+											
+											# Log the solution
+											self.solution_log['days'].append(day)
+											self.solution_log['instructors'].append(instructor.full_name)
+											self.solution_log['students'].append(student.full_name)
+											self.solution_log['aircraft'].append(aircraft.name)
+											self.solution_log['aircraft_model'].append(aircraft_model)
+											self.solution_log['blocks'].append(schedule_block)
+											self.solution_log['day_and_hour_blocks'].append(day + '_' + str(schedule_block))
+											self.solution_log['instructor_and_day_hour_blocks'].append(instructor.full_name + '_' + day + '_' + str(schedule_block))
+											self.solution_log['individual_day_hour_block'].append(instructor.full_name + '_' + day + '_' + str(schedule_block))
+											self.solution_log['individual_day_hour_block'].append(student.full_name + '_' + day + '_' + str(schedule_block))
+
+											# Print the solution if not in test environment
+											if not self.test_environment:
+												file.write('{},{},{},{},{}\n'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
+												print('{},{},{},{},{}'.format(day, instructor.full_name, student.full_name, aircraft.name, schedule_block))
+			if self._solution_count >= self._solution_limit:
+				if not self.test_environment:
+					print('Stop search after %i solutions' % self._solution_limit)
+				self.StopSearch()
 
 
 

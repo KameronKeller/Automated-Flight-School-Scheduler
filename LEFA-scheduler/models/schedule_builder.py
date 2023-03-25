@@ -11,7 +11,7 @@ class ScheduleBuilder:
 	Builds a schedule for the given instructors, calendar, and available aircraft.
 	"""
 
-	def __init__(self, instructors, calendar, available_aircraft, time_limit=False, test_environment=False):
+	def __init__(self, instructors, calendar, available_aircraft, time_limit=False, test_environment=False, prescheduled_blocks=None):
 		"""
 		:param instructors: A dictionary of instructors, key is instructor name, value is Instructor object
 		:param calendar: A Calendar object
@@ -32,6 +32,8 @@ class ScheduleBuilder:
 		self.test_environment = test_environment
 		self.all_aircraft_names = self.get_all_aircraft_names()
 		self.time_limit = time_limit
+		self.solution_keys = None
+		self.prescheduled_blocks = prescheduled_blocks
 
 	def get_all_aircraft_names(self):
 		"""
@@ -60,6 +62,11 @@ class ScheduleBuilder:
 					for aircraft_model, flight_configuration in student.aircraft.items():
 						for aircraft in self.available_aircraft[aircraft_model].values():
 							for schedule_block in aircraft.schedule_blocks:
+
+								# If this block has been prescheduled, skip it 
+								if self.prescheduled_blocks is not None and (day, aircraft.name, schedule_block) in self.prescheduled_blocks:
+									continue
+
 								next_hour = schedule_block + 1 # aircraft are scheduled for 2 hours
 
 								student_unavailability = student.unavailability[day]
@@ -67,6 +74,8 @@ class ScheduleBuilder:
 								combined_unavailability = student_unavailability.union(instructor_unavailability)
 								# If the instructor and student are available, create the duty day and schedule variables
 								if schedule_block not in combined_unavailability and next_hour not in combined_unavailability:
+
+
 									# If the instructor is a solo placeholder and the aircraft is not soloable, skip
 									if instructor.solo_placeholder and not aircraft.soloable:
 										continue
@@ -214,34 +223,7 @@ class ScheduleBuilder:
 						for banned_block in banned_blocks:	
 							if banned_block in self.duty_day:
 								self.model.AddImplication(self.duty_day[current_block], self.duty_day[banned_block].Not())
-					# # other_block = (day, instructor.full_name, possible_block + max_difference)
-					# # if current_block in self.duty_day:
-					# 	print("current {}".format(current_block))
-					# # if other_block in self.duty_day:
-					# 	print("other {}".format(other_block))
 
-		# possible_blocks = Calendar.get_possible_blocks()
-		# max_difference = 12
-		# # on any given day
-		# for day in self.days:
-		# 	# for each instructor
-		# 	for instructor in self.instructors.values():
-		# 		for student in instructor.students:
-		# 			for aircraft_model in student.aircraft.keys():
-		# 				for aircraft in self.available_aircraft[aircraft_model].values():
-		# 					for schedule_block in aircraft.schedule_blocks:
-		# 						for next_student in instructor.students:
-		# 							# Skip over the student if they are the same student
-		# 							if next_student != student:
-		# 								for next_aircraft_model in next_student.aircraft.keys():
-		# 									for next_aircraft in self.available_aircraft[aircraft_model].values():
-		# 										for next_schedule_block in next_aircraft.schedule_blocks:
-		# 											current_block = (day, instructor.full_name, student.full_name, aircraft.name, schedule_block)
-		# 											other_block = (day, instructor.full_name, next_student.full_name, next_aircraft.name, next_schedule_block + max_difference)
-		# 											if current_block in self.schedule:
-		# 												if other_block in self.schedule:
-		# 													# self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
-		# 													self.model.AddInverse([self.schedule[current_block]], [self.schedule[other_block]])
 
 	def add_flights_are_2_hours(self):
 		# Each flight must be 2 hours
@@ -263,62 +245,11 @@ class ScheduleBuilder:
 													self.model.AddImplication(self.schedule[current_block], self.schedule[other_block].Not())
 
 
-				# for aircraft_instance in self.available_aircraft.values():
-				# 	for aircraft_1 in aircraft_instance.values():
-				# 		for aircraft_2 in aircraft_instance.values():
-				# 			if aircraft_1 != aircraft_2:
-				# 				current_block = (day, instructor.full_name, )
-				# 			model.AddImplication(schedule)
-						# self.model.Add(
-						# 	# sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
-						# 	sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)] + self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block + 1)]
-						# 		for student in instructor.students
-						# 			for schedule_block in aircraft.schedule_blocks
-						# 				if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule and (day, instructor.full_name, student.full_name, aircraft.name, schedule_block + 1) in self.schedule )
-						# 					<= 1)
-
-
-
-
 
 	def add_instructors_must_have_one_day_off_per_week(self):
 		# Instructor must have one day off per week
 		for instructor in self.instructors.values():
 			self.model.Add(sum(self.works_day[(day, instructor.full_name)] for day in self.days) < 7)
-		# for instructor in self.instructors.values():
-		# 	for student in instructor.students:
-		# 		for aircraft_model, flight_configuration in student.aircraft.items():
-		# 			for aircraft in self.available_aircraft[aircraft_model].values():
-		# 				for schedule_block in aircraft.schedule_blocks:
-		# 					self.model.Add(sum(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)]
-		# 						for day in self.days
-		# 							if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) < 7)
-
-	# def add_working_6_hours_results_in_a_break(self):
-	# 	last_possible_block = 24
-	# 	possible_blocks = list(range(self.earliest_block, last_possible_block + 1))
-	# 	max_difference = 6
-
-	# 	for day in self.days:
-	# 		for instructor in self.instructors.values():
-	# 			for possible_block in possible_blocks:
-	# 				block_time_1 = possible_block
-	# 				block_time_2 = block_time_1 + 2
-	# 				block_time_3 = block_time_2 + 2
-	# 				block_time_4 = block_time_3 + 2
-	# 				consecutive_blocks = [block_time_1, block_time_2, block_time_3, block_time_4]
-	# 				self.model.Add(sum(self.schedule[day, instructor.full_name, student.full_name, aircraft.name, schedule_block]
-	# 					for student in instructor.students
-	# 						for aircraft_model in student.aircraft.keys()
-	# 							for aircraft in self.available_aircraft[aircraft_model].values()
-	# 								for schedule_block in consecutive_blocks
-	# 									if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) == 3)
-				# for s in instructor.students:
-				# 	for a_m in s.aircraft.keys():
-				# 		for a in self.available_aircraft[a_m].values():
-
-
-
 
 
 	def add_working_6_hours_results_in_a_break(self):
@@ -336,175 +267,6 @@ class ScheduleBuilder:
 								for aircraft in self.available_aircraft[aircraft_model].values() 
 									for schedule_block in consecutive_blocks_window
 										if (day, instructor.full_name, student.full_name, aircraft.name, schedule_block) in self.schedule) <= 3)
-
-
-
-		# 									current_block = self.schedule[(day, instructor.full_name, student_1.full_name, aircraft_1.name, )]
-		# 									print('{} {}'.format(aircraft_1.name, aircraft_2.name))
-
-		# self.model.AddBoolAnd(self.schedule[(('Sunday', 'Instructor L', 's1 L', 'C172_1', 7))], self.schedule[(('Sunday', 'Instructor L', 's2 L', 'C172_1', 13))].Not())
-		# self.model.AddBoolAnd(self.schedule[(('Sunday', 'Instructor L', 's1 L', 'C172_1', 7))], self.schedule[(('Sunday', 'Instructor L', 's3 L', 'C172_1', 13))].Not())
-		# self.model.AddBoolAnd(self.schedule[(('Sunday', 'Instructor L', 's1 L', 'C172_1', 7))], self.schedule[(('Sunday', 'Instructor L', 's4 L', 'C172_1', 13))].Not())
-		# possible_blocks = list(range(self.earliest_block, self.latest_block + 1))
-		# print(possible_blocks)
-		# for day in self.days:
-		# 	for instructor in self.instructors.values():
-		# 		for p1 in possible_blocks:
-		# 			block_1 = (day, instructor.full_name, p1)
-		# 			block_2 = (day, instructor.full_name, p1 + 2)
-		# 			block_3 = (day, instructor.full_name, p1 + 4)
-		# 			block_4 = (day, instructor.full_name, p1 + 6)
-		# 			if block_1 in self.duty_day and block_2 in self.duty_day and block_3 in self.duty_day and block_4 in self.duty_day:
-		# 				print(block_1)
-		# 				print(block_4)
-		# 				self.model.AddImplication(self.duty_day[block_1], self.duty_day[block_4].Not()).OnlyEnforceIf([self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_3]])
-
-								# 				block_time_1 = possible_block
-	# 				block_time_2 = block_time_1 + 2
-	# 				block_time_3 = block_time_2 + 2
-	# 				block_time_4 = block_time_3 + 2
-
-	# 				block_1 = (day, instructor.full_name, block_time_1)
-	# 				block_2 = (day, instructor.full_name, block_time_2)
-	# 				block_3 = (day, instructor.full_name, block_time_3)
-	# 				block_4 = (day, instructor.full_name, block_time_4)
-
-
-		# for day in self.days:
-		# 	for instructor in self.instructors.values():
-		# 		for student_1 in instructor.students:
-		# 			for student_2 in instructor.students:
-		# 				if student_1 != student_2:
-		# 					for aircraft_model_1 in student_1.aircraft.keys():
-		# 						for aircraft_1 in self.available_aircraft[aircraft_model_1].values():
-		# 							for aircraft_model_2 in student_2.aircraft.keys():
-		# 								for aircraft_2 in self.available_aircraft[aircraft_model_2].values():
-		# 									for schedule_block_1 in aircraft_1.schedule_blocks:
-		# 										# for schedule_block_2 in aircraft_2.schedule_blocks:
-		# 										block_1 = (day, instructor.full_name, student_1.full_name, aircraft_1.name, schedule_block_1)
-		# 										block_2 = (day, instructor.full_name, student_2.full_name, aircraft_2.name, schedule_block_1 + 2)
-		# 										block_3 = (day, instructor.full_name, student_2.full_name, aircraft_2.name, schedule_block_1 + 4)
-		# 										block_4 = (day, instructor.full_name, student_2.full_name, aircraft_2.name, schedule_block_1 + 6)
-		# 										if block_1 in self.schedule and block_2 in self.schedule and block_3 in self.schedule and block_4 in self.schedule:
-		# 											print(block_1)
-		# 											print(block_4)
-		# 											# self.model.AddImplication(self.schedule[block_1], self.schedule[block_4].Not()).OnlyEnforceIf([self.schedule[block_1], self.schedule[block_2], self.schedule[block_3]])
-		# 											self.model.AddBoolAnd(self.schedule[block_1], self.schedule[block_4].Not()).OnlyEnforceIf([self.schedule[block_1], self.schedule[block_2], self.schedule[block_3]])
-
-		"""
-			for day in day:
-				for instructor in instructory:
-					for s1 in students
-						for s2 in students:
-							for a1 in s1.aircrafts:
-								for a2 in s2.aircrafts:
-									for block in blocks:
-										if (day, instructor, s1, a1, block 1) and block 2 and block 3 and block 4 in schedule:
-											add implication (current_block, block4.Not()).onlyenforceif(b1, b2, and b3)
-
-		"""
-	# # 	last_possible_block = 24
-	# # 	possible_blocks = list(range(self.earliest_block, last_possible_block + 1))
-	# # 	# max_difference = 6
-
-	# # 	for day in self.days:
-	# # 		for instructor in self.instructors.values():			
-	# # 			for possible_block in possible_blocks:
-
-
-	# 	# # model.Add(b4 == 0).OnlyEnforceIf(b1 and b2 and b3 and b4)
-
-
-	# 	last_possible_block = 24
-	# 	possible_blocks = list(range(self.earliest_block, last_possible_block + 1))
-	# 	max_difference = 6
-
-	# 	for day in self.days:
-	# 		for instructor in self.instructors.values():			
-	# 			for possible_block in possible_blocks:
-
-
-	# 				block_time_1 = possible_block
-	# 				block_time_2 = block_time_1 + 2
-	# 				block_time_3 = block_time_2 + 2
-	# 				block_time_4 = block_time_3 + 2
-
-	# 				block_1 = (day, instructor.full_name, block_time_1)
-	# 				block_2 = (day, instructor.full_name, block_time_2)
-	# 				block_3 = (day, instructor.full_name, block_time_3)
-	# 				block_4 = (day, instructor.full_name, block_time_4)
-
-
-	# 				consecutive_blocks = [block_time_1, block_time_2, block_time_3, block_time_4]
-
-
-	# 				if block_1 in self.duty_day and block_2 in self.duty_day and block_3 in self.duty_day and block_4 in self.duty_day:
-
-
-	# 					# bool_and_1 = self.model.AddBoolAnd(self.duty_day[block_2], self.duty_day[block_3], self.duty_day[block_4])
-	# 					# bool_and_2 = self.model.AddBoolAnd(self.duty_day[block_1], self.duty_day[block_3], self.duty_day[block_4])
-	# 					# bool_and_3 = self.model.AddBoolAnd(self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_4])
-	# 					# bool_and_4 = self.model.AddBoolAnd(self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_3])
-	# 					# bool_or = self.model.AddBoolOr(bool_and_1, bool_and_2, bool_and_3, bool_and_4)
-
-	# 					# temp_1 = self.model.NewBoolVar('b1, b2, b3, b4')
-	# 					# temp_2 = self.model.NewBoolVar('b2, b3, b4')
-	# 					# temp_3 = self.model.NewBoolVar('b1, b3, b4')
-	# 					# temp_4 = self.model.NewBoolVar('b1, b2, b4')
-	# 					# temp_5 = self.model.NewBoolVar('b1, b2, b3')
-
-	# 					# self.model.AddImplication()
-
-
-	# 					# temp_bool_var = self.model.NewBoolVar('temp')
-
-
-
-	# 					# self.model.Add(temp_bool_var).OnlyEnforceIf([self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_3], self.duty_day[block_4]])
-	
-	# 					# # schedule_options = [
-	# 					# # 	[self.duty_day[block_2], self.duty_day[block_3], self.duty_day[block_4]],
-	# 					# # 	[self.duty_day[block_1], self.duty_day[block_3], self.duty_day[block_4]],
-	# 					# # 	[self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_4]],
-	# 					# # 	[self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_3]]]
-	# 					# # self.model.AddBoolOr(schedule_options[0])
-
-	# 					# # self.model.AddBoolAnd([self.duty_day[block_1].Not(), self.duty_day[block_2], self.duty_day[block_3], self.duty_day[block_4]])
-	# 					# # self.model.Add(sum(self.duty_day[day, instructor.full_name, schedule_block] for schedule_block in consecutive_blocks) == 3).OnlyEnforceIf([self.model.AddBoolAnd([self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_3], self.duty_day[block_4]])
-	# 					self.model.Add(sum(self.duty_day[day, instructor.full_name, schedule_block] for schedule_block in consecutive_blocks) <= 3)
-	# 					# self.model.AddBoolAnd([]).OnlyEnforceIf([self.duty_day[block_1], self.duty_day[block_2], self.duty_day[block_3], self.duty_day[block_4]])
-
-
-
-
-		# 			# consecutive_blocks = [block_time_1, block_time_2, block_time_3, block_time_4]
-
-		# 			# self.model.AddBoolAnd([])
-
-		# 			# self.model.Add(sum(self.duty_day[(day, instructor.full_name, schedule_block)] for schedule_block in consecutive_blocks) == 3).OnlyEnforceIf(
-		# 			# 	self.duty_day[(day, instructor.full_name, block_time_1)] &
-		# 			# 	self.duty_day[(day, instructor.full_name, block_time_2)] &
-		# 			# 	self.duty_day[(day, instructor.full_name, block_time_3)] &
-		# 			# 	self.duty_day[(day, instructor.full_name, block_time_4)])
-
-		# 			# current_block = (day, instructor.full_name, possible_block)
-		# 			# 2nd_block = (day, instructor.full_name, block_time_2)
-		# 			# 3rd_block = (day, instructor.full_name, block_time_3)
-
-
-
-		# # last_possible_block = 24
-		# # possible_blocks = list(range(self.earliest_block, last_possible_block + 1))
-		# # max_difference = 6
-		# # for day in self.days:
-		# # 	for instructor in self.instructors.values():
-		# # 		for possible_block in possible_blocks:
-		# # 			current_block = (day, instructor.full_name, possible_block)
-		# # 			if current_block in self.duty_day:
-		# # 				banned_block = (day, instructor.full_name, possible_block + max_difference)
-		# # 				if banned_block in self.duty_day:
-		# # 					print(banned_block)
-		# # 					self.model.AddImplication(self.duty_day[current_block], self.duty_day[banned_block].Not())
 
 
 	def add_constraints(self):
@@ -533,15 +295,15 @@ class ScheduleBuilder:
 		# Create a solution printer and pass it to the solver.
 		solution_printer = SolutionPrinter(self.instructors, self.days, self.available_aircraft, self.schedule, 1, self.test_environment)
 		status = solver.Solve(self.model, solution_printer)
-		if not self.test_environment:
-			print('\nStatistics')
-			print('  - status         : {}'.format(status))
-			print('  - conflicts      : %i' % solver.NumConflicts())
-			print('  - branches       : %i' % solver.NumBranches())
-			print('  - wall time      : %f s' % solver.WallTime())
-			print('  - solutions found: %i' % solution_printer.solution_count())
+		# if not self.test_environment:
+		# 	print('\nStatistics')
+		# 	print('  - status         : {}'.format(status))
+		# 	print('  - conflicts      : %i' % solver.NumConflicts())
+		# 	print('  - branches       : %i' % solver.NumBranches())
+		# 	print('  - wall time      : %f s' % solver.WallTime())
+		# 	print('  - solutions found: %i' % solution_printer.solution_count())
+		self.solution_keys = solution_printer.solution_keys
 		return status, solution_printer.solution_log
-
 
 	def build_schedule(self):
 		"""

@@ -10,6 +10,24 @@ import sys
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
+def run_prescheduler(test_instructors, calendar, available_aircraft):
+    prescheduled_blocks = set()
+    for instructor in test_instructors.values():
+        students = instructor.students
+        for student in students:
+            single_student = [student]
+            instructor.students = single_student
+            schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=60, test_environment=False, prescheduled_blocks=prescheduled_blocks)
+            status, solution_log = schedule_builder.build_schedule()
+            if status == 2 or status == 4:
+                prescheduled_blocks.update(schedule_builder.solution_keys)
+            else:
+                print('NOT FEASABILE')
+
+
+    return prescheduled_blocks
+
+
 def main():
     if len(sys.argv) != 2:
         print("usage: main.py input_csv")
@@ -78,6 +96,8 @@ def main():
         instructors = entry[1]
         available_aircraft = entry[2]
         result_set = set()
+        prescheduled_blocks = set()
+        removed_instructors = []
 
         print("\n======= {} Feasability =======".format(title))
         feasability_analyzer = Analyzer(instructors, calendar, available_aircraft)
@@ -88,7 +108,7 @@ def main():
         print("\n\t----- Testing Individual Instructors -----")
         for instructor_name, instructor in instructors.items():
             test_instructors = {instructor_name : instructor}
-            instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=60, test_environment=True)
+            instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=5, test_environment=True)
             instructor_status, solution_log = instructor_schedule_builder.build_schedule()
             result_set.add(instructor_status)
             num_students = len(instructor.students)
@@ -97,17 +117,25 @@ def main():
                 print("\tTesting: {}, result: {}".format(instructor_name, instructor_status))
                 for i in range(num_students):
                     removed_student = instructor.students.pop(i)
-                    removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=20, test_environment=True)
+                    removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=1, test_environment=True)
                     removed_status, _ = removed_student_schedule_builder.build_schedule()
                     if removed_status == 2 or removed_status == 4:
                         print("\t\tRemoving {} resulted in {}".format(removed_student.full_name, removed_status))
                     instructor.students.insert(i, removed_student)
 
+                prescheduled_blocks = run_prescheduler(test_instructors, calendar, available_aircraft)
+                removed_instructors.append(instructor_name)
+
         # If all instructors are feasible, build the schedule
-        if 3 not in result_set and 0 not in result_set:
-            print("\n======= {} Schedule =======".format(title))
-            schedule_builder = ScheduleBuilder(instructors, calendar, available_aircraft, time_limit=60*60*2)
-            status, solution_log = schedule_builder.build_schedule()
+        # if 3 not in result_set and 0 not in result_set:
+        
+        # Remove the prescheduled instructors
+        for instructor_name in removed_instructors:
+            instructors.pop(instructor_name)
+            print('{} removed'.format(instructor_name))
+        print("\n======= {} Schedule =======".format(title))
+        schedule_builder = ScheduleBuilder(instructors, calendar, available_aircraft, time_limit=60*60*2, prescheduled_blocks=prescheduled_blocks)
+        status, solution_log = schedule_builder.build_schedule()
 
 
 
