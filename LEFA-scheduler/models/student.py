@@ -17,10 +17,20 @@ class Student(Person):
 		"""
 		type_and_rating = rating + ' ' + schedule_type
 		match type_and_rating:
+			case 'Instrument 1 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 1}}
+			case 'APEX 1 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 1}}
+			case 'APEX 2 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 2}}
 			case 'Private Rotor-Wing':
 				return {'R22' : {'dual' : 3}}
+			case 'Private 2 Flight Rotor-Wing':
+				return {'R22' : {'dual' : 2}}
 			case 'Instrument Rotor-Wing':
 				return {'R44' : {'dual' : 2}, 'RWSIM' : {'dual' : 1}}
+			case 'Instrument No Sim Rotor-Wing':
+				return {'R44' : {'dual' : 2}}
 			case 'Commercial Rotor-Wing':
 				return {'R22' : {'dual' : 3}}
 			case 'CFI Rotor-Wing':
@@ -29,10 +39,20 @@ class Student(Person):
 				return {'R44' : {'dual' : 1}, 'RWSIM' : {'dual' : 1}}
 			case 'Private Fixed-Wing':
 				return {'C172' : {'dual' : 3}}
+			case 'Private 1 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 1}}
+			case 'Private 2 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 2}}
 			case 'Instrument Fixed-Wing':
 				return {'C172' : {'dual' : 2}, 'FWSIM' : {'dual' : 1}}
+			case 'Instrument No Sim Fixed-Wing':
+				return {'C172' : {'dual' : 2}}
 			case 'Commercial Fixed-Wing':
 				return {'C172' : {'dual' : 2, 'solo' : 1}, 'FWSIM' : {'dual' : 1}}
+			case 'Commercial No Sim Fixed-Wing':
+				return {'C172' : {'dual' : 2, 'solo' : 1}}
+			case 'Commercial 2 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 1, 'solo' : 1}}
 			case 'CFI Fixed-Wing':
 				return {'C172' : {'dual' : 1}}
 			case 'CFII Fixed-Wing':
