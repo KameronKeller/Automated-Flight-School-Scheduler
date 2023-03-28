@@ -4,6 +4,7 @@ from models.solution_printer import SolutionPrinter
 from models.instructor_student import InstructorStudent
 from models.calendar import Calendar
 import pprint as pp
+import random
 # from models.aircraft import Aircraft
 
 class ScheduleBuilder:
@@ -88,6 +89,27 @@ class ScheduleBuilder:
 										self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.works_day[(day, instructor.full_name)])
 										# Add the implication that if the instructor is scheduled to work at a certain time, they are working that day at that time
 										self.model.AddImplication(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, schedule_block)], self.duty_day[(day, instructor.full_name, schedule_block)])
+										
+	def add_hints(self):
+		possible_blocks = self.calendar.get_possible_blocks()
+		for day in self.days:
+			for instructor in self.instructors.values():
+				for student in instructor.students:
+					for aircraft_model, flight_configuration in student.aircraft.items():
+						for aircraft in self.available_aircraft[aircraft_model].values():
+							student_unavailability = student.unavailability[day]
+							instructor_unavailability = instructor.unavailability[day]
+							combined_unavailability = student_unavailability.union(instructor_unavailability)
+							combined_availability_difference = possible_blocks.difference(combined_unavailability)
+
+							if len(combined_availability_difference) <= 2 and len(combined_availability_difference) > 0:
+								plausible_time = random.choice(list(combined_availability_difference))
+								if (day, instructor.full_name, student.full_name, aircraft.name, plausible_time) in self.schedule:
+									# print('{}, {}, {}'.format(day, student.full_name, plausible_time))
+									# print(plausible_time)
+									self.model.AddHint(self.schedule[(day, instructor.full_name, student.full_name, aircraft.name, plausible_time)], True)
+
+
 
 
 	def add_specified_flights_per_week(self):
@@ -300,6 +322,7 @@ class ScheduleBuilder:
 		Builds the schedule and returns the status of the solver and the solution log
 		"""
 		self.generate_model()
+		# self.add_hints()
 		# print('generating model complete')
 		self.add_constraints()
 		# print('adding constraints complete')
