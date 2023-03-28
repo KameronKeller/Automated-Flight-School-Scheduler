@@ -23,7 +23,8 @@ def main():
     available_fw_aircraft = {}
     available_rw_aircraft = {}
     aircraft_factory = AircraftFactory()
-    calendar = Calendar(earliest_block=7, latest_block=17)
+    calendar = Calendar(earliest_block=6, latest_block=18)
+    # instrument_calendar = Calendar(earliest_block=6, latest_block=22)
     earliest_block = calendar.earliest_block
     latest_block = calendar.latest_block
 
@@ -72,6 +73,7 @@ def main():
                                     soloable=False)
 
     data = [('Fixed-Wing', fw_instructors, available_fw_aircraft), ('Rotor-Wing', rw_instructors, available_rw_aircraft)]
+    # data = [('Rotor-Wing', rw_instructors, available_rw_aircraft)]
 
     for entry in data:
         title = entry[0]
@@ -79,7 +81,7 @@ def main():
         available_aircraft = entry[2]
         result_set = set()
 
-        print("\n======= {} Feasability =======".format(title))
+        print("\n======= {} Feasibility =======".format(title))
         feasability_analyzer = Analyzer(instructors, calendar, available_aircraft)
         feasability_analyzer.check_for_sufficient_aircraft()
         print("--- Student Conflicts ---")
@@ -88,7 +90,7 @@ def main():
         print("\n\t----- Testing Individual Instructors -----")
         for instructor_name, instructor in instructors.items():
             test_instructors = {instructor_name : instructor}
-            instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=60, test_environment=True)
+            instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=10, test_environment=True)
             instructor_status, solution_log = instructor_schedule_builder.build_schedule()
             result_set.add(instructor_status)
             num_students = len(instructor.students)
@@ -97,7 +99,7 @@ def main():
                 print("\tTesting: {}, result: {}".format(instructor_name, instructor_status))
                 for i in range(num_students):
                     removed_student = instructor.students.pop(i)
-                    removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=20, test_environment=True)
+                    removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=5, test_environment=True)
                     removed_status, _ = removed_student_schedule_builder.build_schedule()
                     if removed_status == 2 or removed_status == 4:
                         print("\t\tRemoving {} resulted in {}".format(removed_student.full_name, removed_status))
