@@ -26,7 +26,8 @@ class ProfileBuilder:
 			'What is your phone number?',
 			'Are you a COCC student?',
 			'Who is your instructor?',
-			'What rating will you primarily be working on during the Winter term (January - April)?',
+			'What rating will you be working on during the Spring term (April-June)?',
+			# 'What rating will you be working on during the Spring term (April-June)?',
 			'Are you scheduling Rotor-Wing or Fixed-Wing aircraft?',
 			'Sunday - Unavailability',
 			'Monday - Unavailability',
@@ -132,7 +133,7 @@ class ProfileBuilder:
 				if instructor_name != "I am an instructor":
 					name = profile['full_name']
 					if name != ' ':
-						print('{} needs an instructor'.format(name))
+						print('Instructor needed for {}. \'{}\' not found'.format(name, instructor_name))
 
 		return fw_instructors, rw_instructors
 
@@ -171,7 +172,7 @@ class ProfileBuilder:
 					'phone_number' : row['What is your phone number?'],
 					'cocc_student' : row['Are you a COCC student?'],
 					'instructor' : row['Who is your instructor?'],
-					'current_rating' : row['What rating will you primarily be working on during the Winter term (January - April)?'],
+					'current_rating' : row['What rating will you be working on during the Spring term (April-June)?'],
 					'schedule_type' : row['Are you scheduling Rotor-Wing or Fixed-Wing aircraft?'],
 					'rotorwing_unavailability' : {
 						'Sunday' : row['Sunday - Unavailability'],
@@ -206,7 +207,8 @@ class ProfileBuilder:
 							for existing_name in people.keys():
 								similarity = self.similar(name, existing_name)
 								if similarity >= 0.85:
-									print('{} is very similar to {}, are they duplicates?'.format(name, existing_name))
+									# print('{} is very similar to {}, are they duplicates?'.format(name, existing_name))
+									print('Possible duplicate: {} is very similar to {}.'.format(name, existing_name))
 
 							people[name] = [instructor]
 						else:
