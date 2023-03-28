@@ -102,8 +102,6 @@ class Analyzer:
 						if hour and next_hour in availability_difference:
 							available_blocks_counter += 1
 
-					# Prints the availability ratio for each student
-					# print('{:.2f}: {} {}'.format(len(availability_difference)/len(possible_blocks), day, student.full_name))
 
 					combined_unavailability = instructor.unavailability[day].union(unavailability)
 					combined_availability_difference = possible_blocks.difference(combined_unavailability)
@@ -116,11 +114,20 @@ class Analyzer:
 						if hour and next_hour in availability_difference:
 							combined_blocks_counter += 1
 
+					# Prints the combined availability ratio for each student
+					# Prints the availability ratio for each student
+					# if student.full_name == 'travis meaker':
+					# print('individual: {:.2f}: {} {}'.format(len(availability_difference)/len(possible_blocks), day, student.full_name))
+					# print(availability_difference)
+					# print('combined: {:.2f}: {} {}'.format(len(combined_availability_difference)/len(possible_blocks), day, student.full_name))
+					# print(combined_availability_difference)
+
 				days_difference = available_days_counter - flights_needed_counter
 				blocks_difference = available_blocks_counter - flights_needed_counter
 
 				combined_days_difference = combined_days_counter - flights_needed_counter
 				combined_blocks_difference = combined_blocks_counter - flights_needed_counter
+
 
 				if days_difference < 0:
 					print('{} does not have enough days available. Needs {}, has {}'.format(student.full_name, flights_needed_counter, available_days_counter))
@@ -128,9 +135,9 @@ class Analyzer:
 					print('{} does not have enough blocks available. Needs {}, has {}'.format(student.full_name, flights_needed_counter, available_blocks_counter))
 
 				if combined_days_difference < 0:
-					print('{} and {} combined do not have enough days available. Needs {}, has {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_days_counter))
+					print('{} and {} combined do not have enough days available. Need {}, have {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_days_counter))
 				if combined_blocks_difference < 0:
-					print('{} and {} combined do not have enough blocks available. Needs {}, has {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_blocks_counter))
+					print('{} and {} combined do not have enough blocks available. Need {}, have {}'.format(student.full_name, instructor.full_name, flights_needed_counter, combined_blocks_counter))
 
 
 
