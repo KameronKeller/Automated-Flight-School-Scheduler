@@ -29,7 +29,7 @@ class AircraftFactory:
 				schedule_blocks = self.calculate_blocks(earliest_block, latest_block)
 			else:
 				block_type = self.calculate_even_or_odd(later_start_time)
-				schedule_blocks = self.calculate_blocks(later_start_time, earlier_finish_time)
+				schedule_blocks = self.calculate_blocks(later_start_time, latest_block)
 
 			aircraft = Aircraft(aircraft_name, model, block_type, schedule_blocks, soloable)
 			available_aircraft[aircraft_name] = aircraft
