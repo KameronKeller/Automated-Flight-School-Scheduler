@@ -23,62 +23,69 @@ def main():
     available_fw_aircraft = {}
     available_rw_aircraft = {}
     aircraft_factory = AircraftFactory()
-    calendar = Calendar(earliest_block=6, latest_block=18)
+    rw_calendar = Calendar(earliest_block=6, latest_block=18)
+    fw_calendar = Calendar(earliest_block=6, latest_block=17)
     # instrument_calendar = Calendar(earliest_block=6, latest_block=22)
-    earliest_block = calendar.earliest_block
-    latest_block = calendar.latest_block
+    # earliest_block = calendar.earliest_block
+    # latest_block = calendar.latest_block
 
     available_rw_aircraft['R22'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'R22',
                                     model = 'R22',
                                     num_aircraft = 6,
-                                    earliest_block = earliest_block,
-                                    latest_block = latest_block)
+                                    earliest_block = rw_calendar.earliest_block,
+                                    latest_block = rw_calendar.latest_block)
 
     available_rw_aircraft['R44'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'R44',
                                     model = 'R44',
                                     num_aircraft = 3,
-                                    earliest_block = earliest_block,
-                                    latest_block = latest_block)
+                                    earliest_block = rw_calendar.earliest_block,
+                                    latest_block = rw_calendar.latest_block)
 
     available_rw_aircraft['RWSIM'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'RWSIM',
                                     model = 'RWSIM',
                                     num_aircraft = 1,
-                                    earliest_block = earliest_block,
-                                    latest_block = latest_block,
+                                    earliest_block = rw_calendar.earliest_block,
+                                    latest_block = rw_calendar.latest_block,
                                     soloable=False)
 
     available_fw_aircraft['C172'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'C172',
                                     model = 'C172',
                                     num_aircraft = 11,
-                                    earliest_block = earliest_block,
-                                    latest_block = latest_block)
+                                    earliest_block = fw_calendar.earliest_block,
+                                    latest_block = fw_calendar.latest_block)
 
     available_fw_aircraft['BARON'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'BARON',
                                     model = 'BARON',
                                     num_aircraft = 1,
-                                    earliest_block = earliest_block,
-                                    latest_block = latest_block)
+                                    earliest_block = fw_calendar.earliest_block,
+                                    latest_block = fw_calendar.latest_block)
 
     available_fw_aircraft['FWSIM'] = aircraft_factory.build_aircraft_of_model(
                                     name_prefix = 'FWSIM',
                                     model = 'FWSIM',
-                                    num_aircraft = 2,
-                                    earliest_block = earliest_block,
-                                    latest_block = latest_block,
+                                    num_aircraft = 1,
+                                    earliest_block = fw_calendar.earliest_block,
+                                    latest_block = fw_calendar.latest_block,
                                     soloable=False)
 
-    data = [('Fixed-Wing', fw_instructors, available_fw_aircraft), ('Rotor-Wing', rw_instructors, available_rw_aircraft)]
-    # data = [('Rotor-Wing', rw_instructors, available_rw_aircraft)]
+    # for aircraft_model, aircraft_instance in available_rw_aircraft.items():
+    #     print(aircraft_instance)
+    #     for aname, aircraft in aircraft_instance.items():
+    #         print(aname)
+    #         print(aircraft.schedule_blocks)
+
+    data = [('Fixed-Wing', fw_instructors, available_fw_aircraft, fw_calendar), ('Rotor-Wing', rw_instructors, available_rw_aircraft, rw_calendar)]
 
     for entry in data:
         title = entry[0]
         instructors = entry[1]
         available_aircraft = entry[2]
+        calendar = entry[3]
         result_set = set()
 
         print("\n======= {} Feasibility =======".format(title))
@@ -90,7 +97,7 @@ def main():
         print("\n\t----- Testing Individual Instructors -----")
         for instructor_name, instructor in instructors.items():
             test_instructors = {instructor_name : instructor}
-            instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=10, test_environment=True)
+            instructor_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=30, test_environment=True)
             instructor_status, solution_log = instructor_schedule_builder.build_schedule()
             result_set.add(instructor_status)
             num_students = len(instructor.students)
@@ -99,11 +106,36 @@ def main():
                 print("\tTesting: {}, result: {}".format(instructor_name, instructor_status))
                 for i in range(num_students):
                     removed_student = instructor.students.pop(i)
-                    removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=5, test_environment=True)
+                    removed_student_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=10, test_environment=True)
                     removed_status, _ = removed_student_schedule_builder.build_schedule()
                     if removed_status == 2 or removed_status == 4:
                         print("\t\tRemoving {} resulted in {}".format(removed_student.full_name, removed_status))
                     instructor.students.insert(i, removed_student)
+
+                    # # Check if freeing up the student helps:
+                    # if removed_status == 2 or removed_status ==4:
+                    #     for day in calendar.days:
+                    #         # make a copy of the set
+                    #         unavailability_copy = removed_student.unavailability[day].copy()
+                    #         unavailability_list = list(removed_student.unavailability[day])
+                    #         unavailability_list.sort()
+                    #         # num_blocks = len(removed_student.unavailability[day])
+                    #         # while len(removed_student.unavailability[day]) > 0:
+                    #         # for j in range(num_blocks):
+                    #         for unavailability_hour in unavailability_list:
+                    #             second_removed_block = 'NA'
+                    #             # print(unavailability_hour)
+                    #             removed_student.unavailability[day].remove(unavailability_hour)
+                    #             if unavailability_hour + 1 in unavailability_list:
+                    #                 next_hour = unavailability_hour + 1
+                    #                 removed_student.unavailability[day].remove(next_hour)
+
+                    #                 # print(removed_student.unavailability[day])
+                    #             removed_block_schedule_builder = ScheduleBuilder(test_instructors, calendar, available_aircraft, time_limit=2, test_environment=True)
+                    #             removed_block_status, _ = removed_student_schedule_builder.build_schedule()
+                    #             if removed_block_status == 2 or removed_block_status == 4 or removed_block_status == 3:
+                    #                 print("\t\t\tRemoving unavailable block {}, {} and {} resulted in {}".format(day, unavailability_hour, next_hour, removed_block_status))
+                    #             removed_student.unavailability[day] = unavailability_copy.copy()
 
         # If all instructors are feasible, build the schedule
         if 3 not in result_set and 0 not in result_set:
