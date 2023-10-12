@@ -1,6 +1,6 @@
 # LEFA-scheduler
 
-An tool to automate the generation of a flight schools schedule for all students, instructors, and aircraft.
+A tool to automate the generation of a flight school's schedule for all students, instructors, and aircraft.
 
 
 ```
