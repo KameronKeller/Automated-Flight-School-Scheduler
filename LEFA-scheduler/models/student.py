@@ -24,14 +24,18 @@ class Student(Person):
 			case 'APEX 2 Flight Fixed-Wing':
 				return {'C172' : {'dual' : 2}}
 			case 'Private Rotor-Wing':
-				return {'R22' : {'dual' : 3}}
+				return {'R22' : {'dual' : 4}}
 			case 'Private 2 Flight Rotor-Wing':
 				return {'R22' : {'dual' : 2}}
+			case 'Private 3 Flight Rotor-Wing':
+				return {'R22' : {'dual' : 3}}
 			case 'Instrument Rotor-Wing':
 				return {'R44' : {'dual' : 2}, 'RWSIM' : {'dual' : 1}}
 			case 'Instrument No Sim Rotor-Wing':
 				return {'R44' : {'dual' : 2}}
 			case 'Commercial Rotor-Wing':
+				return {'R22' : {'dual' : 4}}
+			case 'Commercial 3 Flight Rotor-Wing':
 				return {'R22' : {'dual' : 3}}
 			case 'CFI Rotor-Wing':
 				return {'R22' : {'dual' : 2}}
@@ -44,11 +48,17 @@ class Student(Person):
 			case 'Private 2 Flight Fixed-Wing':
 				return {'C172' : {'dual' : 2}}
 			case 'Instrument Fixed-Wing':
-				return {'C172' : {'dual' : 2}, 'FWSIM' : {'dual' : 1}}
+				return {'C172' : {'dual' : 2}}
+			case 'Instrument 1 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 1}}
+				# return {'C172' : {'dual' : 2}, 'FWSIM' : {'dual' : 1}}
 			case 'Instrument No Sim Fixed-Wing':
 				return {'C172' : {'dual' : 2}}
 			case 'Commercial Fixed-Wing':
-				return {'C172' : {'dual' : 2, 'solo' : 1}, 'FWSIM' : {'dual' : 1}}
+				return {'C172' : {'dual' : 3, 'solo' : 1}}
+				# return {'C172' : {'dual' : 3, 'solo' : 1}, 'FWSIM' : {'dual' : 1}}
+			case 'Commercial 3 Flight Fixed-Wing':
+				return {'C172' : {'dual' : 2, 'solo' : 1}}
 			case 'Commercial No Sim Fixed-Wing':
 				return {'C172' : {'dual' : 2, 'solo' : 1}}
 			case 'Commercial 2 Flight Fixed-Wing':
@@ -56,9 +66,12 @@ class Student(Person):
 			case 'CFI Fixed-Wing':
 				return {'C172' : {'dual' : 1}}
 			case 'CFII Fixed-Wing':
-				return {'C172' : {'dual' : 1}, 'FWSIM' : {'dual' : 1}}
+				return {'C172' : {'dual' : 1}}
+				# return {'C172' : {'dual' : 1}, 'FWSIM' : {'dual' : 1}}
 			case 'MEI Fixed-Wing':
 				return {'BARON' : {'dual' : 3}}
+			case 'MEI 2 Flight Fixed-Wing':
+				return {'BARON' : {'dual' : 2}}
 			case 'ME Fixed-Wing':
 				return {'BARON' : {'dual' : 3}}
 			case _:
