@@ -34,6 +34,33 @@ class ScheduleBuilder:
 		self.all_aircraft_names = self.get_all_aircraft_names()
 		self.time_limit = time_limit
 
+		# These blocks are not available
+		self.ignore = [('Monday','R22_2',8),
+						('Monday','R22_2',14),
+						('Monday','RWSIM_1',10),
+						('Monday','R22_1',12),
+						('Tuesday','R22_3',12),
+						('Tuesday','R22_2',8),
+						('Tuesday','R22_2',10),
+						('Tuesday','R22_1',18),
+						('Tuesday','R22_2',14),
+						('Tuesday','R22_1',16),
+						('Wednesday','R22_1',8),
+						('Wednesday','R22_2',16),
+						('Wednesday','R22_3',14),
+						('Wednesday','R44_1',12),
+						('Wednesday','R22_2',18),
+						('Wednesday','R22_3',10),
+						('Thursday','R22_6',17),
+						('Thursday','R44_3',15),
+						('Thursday','R22_5',11),
+						('Thursday','R22_4',9),
+						('Thursday','R22_5',13),
+						('Friday','R22_2',10),
+						('Friday','R22_1',8),
+						('Friday','R22_2',12),
+						('Friday','R22_3',14)]
+
 	def get_all_aircraft_names(self):
 		"""
 		Returns a list of all aircraft names
@@ -61,6 +88,11 @@ class ScheduleBuilder:
 					for aircraft_model, flight_configuration in student.aircraft.items():
 						for aircraft in self.available_aircraft[aircraft_model].values():
 							for schedule_block in aircraft.schedule_blocks:
+
+								# If this block has been prescheduled, skip it 
+								if (day, aircraft.name, schedule_block) in self.ignore:
+									continue
+
 								next_hour = schedule_block + 1 # aircraft are scheduled for 2 hours
 
 								student_unavailability = student.unavailability[day]
